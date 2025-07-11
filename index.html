@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>mycards</title>
+    <link rel="manifest" href="./manifest.json">
+    <style>
+        /* --- 全局和基础样式 --- */
+        :root {
+            --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            background-color: #f5f7fa;
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            max-width: 80vw;
+            margin: 0 auto;
+        }
+
+        /* --- 页面容器和导航 --- */
+        .page-container {
+            display: none; /* 默认隐藏所有页面 */
+            flex-direction: column;
+            min-height: calc(100vh - 80px);
+            padding: 1vw; /* 基础padding */
+            box-sizing: border-box;
+            padding-top: 80px; /* 为固定导航留出空间 */
+        }
+
+        .page-container.active {
+            display: flex; /* 显示当前活动页面 */
+        }
+
+        .app-nav {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 80vw;
+            display: flex;
+            justify-content: space-around;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 5000;
+            padding: 10px 0;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            color: #666;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-btn.active {
+            background-color: #00bcd4;
+            color: white;
+        }
+
+        /* --- 通用组件 --- */
+        .toast {
+            position: fixed;
+            bottom: calc(34.67vw + var(--safe-area-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2.67vw 5.33vw;
+            border-radius: 3.2vw;
+            font-size: 3.73vw;
+            z-index: 9999;
+            user-select: none;
+            text-align: center;
+            animation: toastFadeIn 0.3s ease;
+            max-width: 85%;
+            box-sizing: border-box;
+        }
+
+        @keyframes toastFadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20%); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .toast.success { background: #4caf50; }
+        .toast.error { background: #f44336; }
+        .toast.info { background: #2196f3; }
+
+        .btn {
+            flex: 1;
+            border-radius: 6.67vw;
+            font-size: 3.4vw;
+            height: 11.73vw;
+            line-height: 11.73vw;
+            box-shadow: 0 0.53vw 1.07vw rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: none;
+            font-weight: bold;
+            color: white;
+            user-select: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            padding: 0 1vw;
+        }
+        .btn:active { opacity: 0.8; }
+        .delete { background-color: #e74c3c; }
+        .mark { background-color: #f39c12; }
+        .spell { background-color: #9b59b6; }
+        .travel { background-color: #3498db; }
+        .draw {
+            background-color: #2ecc71;
+            width: 100%;
+            font-size: 4vw;
+            border-radius: 8vw;
+        }
+
+        /* --- 页面1 (抽卡) 样式 --- */
+        #page1 { align-items: center; }
+        .flex-grow { flex-grow: 1; }
+        .stats-card {
+            background-color: #ffffff;
+            border-radius: 2.67vw;
+            box-shadow: 0 0.53vw 1.6vw rgba(0, 0, 0, 0.05);
+            padding: 3.73vw;
+            margin: 2.67vw auto;
+            width: 95%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .statistics {
+            margin: 1.07vw 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+        .label { font-size: 3.73vw; color: #666; user-select: none; }
+        .value { font-size: 4.27vw; font-weight: bold; color: #00bcd4; margin: 0 0.8vw; user-select: text; }
+        .bottom-fixed-section {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 80vw;
+            padding: 0 2.13vw calc(6.67vw + var(--safe-area-bottom));
+            box-sizing: border-box;
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card-display {
+            width: 100%;
+            min-height: 32vw;
+            max-height: 42.67vw;
+            padding: 1.07vw 0;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-content { font-size: 4.27vw; line-height: 1.6; color: #333; text-align: center; word-break: break-word; user-select: text; }
+        .button-group { width: 100%; display: flex; flex-direction: column; gap: 2.13vw; padding-bottom: 0.67vw; box-sizing: border-box; }
+        .button-row { display: flex; justify-content: space-between; gap: 1.6vw; width: 100%; }
+        
+        /* Dialogs */
+        .dialog-mask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .dialog-container { width: 80%; background: #fff; border-radius: 3.2vw; overflow: hidden; box-shadow: 0 1.33vw 4vw rgba(0, 0, 0, 0.2); }
+        .dialog-header { padding: 4vw; font-size: 4.8vw; font-weight: bold; text-align: center; background-color: #f8f8f8; border-bottom: 1px solid #eee; color: #2c3e50; }
+        .dialog-body { padding: 6.67vw 4vw; text-align: center; font-size: 4.27vw; color: #555; line-height: 1.6; }
+        .dialog-footer { display: flex; border-top: 1px solid #eee; }
+        .dialog-footer button { flex: 1; margin: 0; padding: 3.33vw 0; border-radius: 0; font-size: 4.27vw; background: #fff; border: none; cursor: pointer; }
+        .btn-cancel { color: #666; border-right: 1px solid #eee; }
+        .btn-confirm { color: #e64340; font-weight: bold; }
+        .spell-dialog-container { width: 90%; max-width: 80vw; background: #fff; border-radius: 3.2vw; overflow: hidden; box-shadow: 0 1.33vw 4vw rgba(0, 0, 0, 0.2); }
+        .spell-dialog-header { padding: 4vw; font-size: 4.8vw; font-weight: bold; text-align: center; background-color: #9b59b6; color: white; }
+        .spell-dialog-body { padding: 5.33vw 4vw; }
+        .spell-input-container { position: relative; margin-bottom: 5.33vw; }
+        .spell-input { width: 100%; height: 13.33vw; border: 0.27vw solid #ddd; border-radius: 1.6vw; padding: 0 2.67vw; font-size: 4.8vw; text-align: center; transition: border-color 0.3s; box-sizing: border-box; }
+        .spell-input.error { border-color: #e74c3c; }
+        .spell-error-msg { color: #e74c3c; font-size: 3.73vw; text-align: center; margin-top: 2.67vw; }
+        .spell-correct-msg { color: #2ecc71; font-size: 4.27vw; font-weight: bold; text-align: center; margin-top: 2.67vw; }
+
+        /* --- 页面2 (管理) 样式 --- */
+        .page2-bottom-fixed-section {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 80vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 20px;
+            padding-bottom: calc(20px + var(--safe-area-bottom));
+        }
+        .input-box {
+            width: 100%;
+            height: 80px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            padding: 10px 14px;
+            font-size: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0.27vw 0.8vw rgba(0, 0, 0, 0.06);
+            color: #333333;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        .input-box:focus { border-color: #007AFF; box-shadow: 0 0 0.8vw #007AFF; outline: none; }
+        .top-btn-row { display: flex; justify-content: center; align-items: center; width: 100%; margin: 0 auto; gap: 1.6vw; }
+        #page2 .btn { font-size: 3.73vw; }
+        .left-delete { background: linear-gradient(135deg, #f44336, #e53935); }
+        .save-btn { background: linear-gradient(135deg, #409ef0, #136cf1); box-shadow: 0 0.8vw 1.6vw rgba(0, 130, 255, 0.4); }
+        .right-copy { background: linear-gradient(135deg, #4caf50, #43a047); }
+        #page2 .btn:active { transform: scale(0.97); opacity: 0.85; }
+        .save-status { margin-top: 20px; font-size: 4.27vw; color: #2ecc71; min-height: 20px; font-weight: bold; }
+
+        /* --- 页面3 (已标记) 样式 --- */
+        #page3 { justify-content: flex-end; align-items: center; }
+        .marked-words-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2.67vw;
+            justify-content: center;
+            width: 100%;
+            padding-bottom: calc(15vw + var(--safe-area-bottom)); /* 为底部按钮留出空间 */
+        }
+        .marked-word { display: inline-flex; justify-content: center; align-items: center; padding: 1.87vw 3.2vw; font-size: 4.27vw; border-radius: 5.33vw; background-color: #00bcd4; color: white; user-select: text; cursor: pointer; white-space: nowrap; box-sizing: border-box; transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; }
+        .marked-word.selected { background-color: #f39c12; transform: scale(1.05); box-shadow: 0 0.53vw 1.6vw rgba(0, 0, 0, 0.1); }
+        .no-marked { font-size: 3.73vw; color: #999; text-align: center; padding-bottom: calc(15vw + var(--safe-area-bottom)); }
+        .page3-action-container {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 80vw;
+            z-index: 999;
+            display: none; /* 默认隐藏 */
+            gap: 15px; /* 按钮间距 */
+            padding: 20px 0;
+            padding-bottom: calc(20px + var(--safe-area-bottom));
+        }
+        .btn-p3-action { flex: 1; height: 11.73vw; line-height: 11.73vw; font-size: 4.27vw; border-radius: 5.87vw; text-align: center; font-weight: bold; user-select: none; border: none; color: white; }
+
+        /* 新增的单词计数样式 */
+        .card-content-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .word-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 2.67vw;
+            color: #999;
+            /*background-color: rgba(255, 255, 255, 0.7);*/
+            border-radius: 50%;
+            width: 4.8vw;
+            height: 4.8vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="app-nav">
+        <button id="nav-btn-1" class="nav-btn active">抽卡</button>
+        <button id="nav-btn-2" class="nav-btn">管理</button>
+        <button id="nav-btn-3" class="nav-btn">已标记</button>
+    </nav>
+
+    <div id="page1" class="page-container active">
+        <div class="stats-card">
+            <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
+            <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
+            <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
+            <div class="statistics"><span class="label">⏱️ 最后更新：</span><span class="value" id="lastUpdateTime"></span></div>
+        </div>
+        <div class="flex-grow"></div>
+        <div class="bottom-fixed-section">
+            <div class="card-display"><span class="card-content" id="displayContent">暂无内容，请添加</span></div>
+            <div class="button-group">
+                <div class="button-row">
+                    <button class="btn delete" id="deleteContentBtn">删除</button>
+                    <button class="btn mark" id="markwordBtn">标记</button>
+                    <button class="btn spell" id="openSpellCheckBtn">检查</button>
+                    <button class="btn travel" id="travelBtn">穿越</button>
+                </div>
+                <button class="btn draw" id="drawOneBtn">下一张</button>
+            </div>
+        </div>
+        <div id="confirmDialog" class="dialog-mask" style="display: none;">
+            <div class="dialog-container" onclick="event.stopPropagation()">
+                <div class="dialog-header">确认删除</div>
+                <div class="dialog-body">确定要删除当前卡片吗？</div>
+                <div class="dialog-footer">
+                    <button id="cancelDeleteBtn" class="btn-cancel">取消</button>
+                    <button id="confirmDeleteBtn" class="btn-confirm">确定</button>
+                </div>
+            </div>
+        </div>
+        <div id="spellCheckDialog" class="dialog-mask" style="display: none;">
+            <div class="spell-dialog-container" onclick="event.stopPropagation()">
+                <div class="spell-dialog-header"></div>
+                <div class="spell-dialog-body">
+                    <div class="spell-input-container">
+                        <input id="spellInput" class="spell-input" placeholder="正在检查..." value="">
+                        <div id="spellMessageContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page2" class="page-container">
+        <div class="page2-bottom-fixed-section">
+            <textarea id="inputContent" class="input-box" placeholder="请输入内容，句号可分隔多条..."></textarea>
+            <div class="top-btn-row">
+                <button id="clearAllBtn" class="btn left-delete">删除</button>
+                <button id="copyAllBtn" class="btn right-copy">复制</button>
+                <button id="saveCardBtn" class="btn save-btn">保存</button>
+            </div>
+            <span id="saveStatus" class="save-status"></span>
+        </div>
+    </div>
+
+    <div id="page3" class="page-container">
+        <div id="noMarkedMessage" class="no-marked" style="display: none;">暂无标记内容</div>
+        <div id="markedWordsContainer" class="marked-words-container"></div>
+        <div id="page3ActionContainer" class="page3-action-container">
+            <button id="deleteMarkedBtn" class="btn-p3-action delete">删除</button>
+            <button id="travelMarkedBtn" class="btn-p3-action travel">穿越</button>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast" style="display: none;"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Mock WX API with Web APIs ---
+        const wx = {
+            getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
+            setStorageSync: (key, data) => { localStorage.setItem(key, JSON.stringify(data)); },
+            removeStorageSync: (key) => { localStorage.removeItem(key); },
+            clearStorageSync: () => { localStorage.clear(); },
+            setClipboardData: async ({ data, success, fail }) => {
+                if (navigator.clipboard) {
+                    try { await navigator.clipboard.writeText(data); if (success) success(); } catch (err) { if (fail) fail(); }
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = data; document.body.appendChild(textArea); textArea.focus(); textArea.select();
+                    try { document.execCommand('copy'); if (success) success(); } catch (err) { if (fail) fail(); }
+                    document.body.removeChild(textArea);
+                }
+            },
+            showToast: (options) => {
+                const toastEl = document.getElementById('toast');
+                toastEl.textContent = options.title; toastEl.className = 'toast';
+                if (options.icon === 'success') toastEl.classList.add('success');
+                else if (options.icon === 'error' || options.icon === 'none') toastEl.classList.add('error');
+                else if (options.icon === 'info') toastEl.classList.add('info');
+                toastEl.style.display = 'block';
+                setTimeout(() => { toastEl.style.display = 'none'; }, options.duration || 2000);
+            },
+            showModal: (options) => {
+                if (confirm(`${options.title}\n${options.content}`)) { if (options.success) options.success({ confirm: true, cancel: false }); }
+                else { if (options.success) options.success({ confirm: false, cancel: true }); }
+            }
+        };
+
+        // --- App State & Navigation ---
+        const pages = {
+            page1: document.getElementById('page1'),
+            page2: document.getElementById('page2'),
+            page3: document.getElementById('page3'),
+        };
+        const navButtons = {
+            btn1: document.getElementById('nav-btn-1'),
+            btn2: document.getElementById('nav-btn-2'),
+            btn3: document.getElementById('nav-btn-3'),
+        };
+        
+        // --- 滑动切换逻辑 ---
+        let touchStartX = 0;
+        let currentPageIndex = 1;
+        const swipeThreshold = 50; // 最小滑动距离
+
+        function handleTouchStart(event) {
+            const targetNode = event.target.nodeName.toUpperCase();
+            if (document.getElementById('confirmDialog').style.display !== 'none' ||
+                document.getElementById('spellCheckDialog').style.display !== 'none' ||
+                ['INPUT', 'TEXTAREA', 'BUTTON'].includes(targetNode)) {
+                touchStartX = 0;
+                return;
+            }
+            touchStartX = event.changedTouches[0].screenX;
+        }
+
+        function handleTouchEnd(event) {
+            if (touchStartX === 0) return;
+            const touchEndX = event.changedTouches[0].screenX;
+            const diffX = touchEndX - touchStartX;
+
+            if (diffX < -swipeThreshold && currentPageIndex < 3) { navigateTo(`page${currentPageIndex + 1}`); }
+            else if (diffX > swipeThreshold && currentPageIndex > 1) { navigateTo(`page${currentPageIndex - 1}`); }
+            touchStartX = 0;
+        }
+
+        document.body.addEventListener('touchstart', handleTouchStart, false);
+        document.body.addEventListener('touchend', handleTouchEnd, false);
+        // --- 滑动切换逻辑结束 ---
+
+        function navigateTo(pageId) {
+            Object.values(pages).forEach(p => p.classList.remove('active'));
+            Object.values(navButtons).forEach(b => b.classList.remove('active'));
+            pages[pageId].classList.add('active');
+            navButtons['btn' + pageId.slice(-1)].classList.add('active');
+            currentPageIndex = parseInt(pageId.slice(-1));
+            const handler = app[pageId];
+            if (handler && typeof handler.onShow === 'function') {
+                handler.onShow();
+            }
+        }
+        navButtons.btn1.addEventListener('click', () => navigateTo('page1'));
+        navButtons.btn2.addEventListener('click', () => navigateTo('page2'));
+        navButtons.btn3.addEventListener('click', () => navigateTo('page3'));
+
+        // --- Main App Logic ---
+        const app = {
+            // =================================== PAGE 1: 抽卡 ===================================
+            page1: {
+                data: { displayContent: '', currentIndex: -1, isChecking: false, cardCount: 0, swipeCount: 0, todaySwipeCount: 0,      isInitialLoad: true  },
+                elements: {
+                    todaySwipeCount: document.getElementById('todaySwipeCount'), swipeCount: document.getElementById('swipeCount'), cardCount: document.getElementById('cardCount'),
+                    lastUpdateTime: document.getElementById('lastUpdateTime'), displayContent: document.getElementById('displayContent'), confirmDialog: document.getElementById('confirmDialog'),
+                    spellCheckDialog: document.getElementById('spellCheckDialog'), spellInput: document.getElementById('spellInput'), spellMessageContainer: document.getElementById('spellMessageContainer'),
+                },
+                onLoad() { this.addEventListeners(); this.onShow(); },
+                onShow() {
+                    if (!this.data.displayContent) { this.getRandomContent(false); }
+                    this.updateStatistics(); this.data.swipeCount = wx.getStorageSync('swipeCount') || 0; this.elements.swipeCount.textContent = this.data.swipeCount; this.syncTodaySwipeCount();
+                },
+                addEventListeners() {
+                    document.getElementById('drawOneBtn').addEventListener('click', () => this.drawOne());
+                    document.getElementById('deleteContentBtn').addEventListener('click', () => this.deleteContent());
+                    document.getElementById('markwordBtn').addEventListener('click', () => this.markword());
+                    document.getElementById('openSpellCheckBtn').addEventListener('click', () => this.openSpellCheck());
+                    document.getElementById('travelBtn').addEventListener('click', () => this.travelToEudic());
+                    document.getElementById('confirmDialog').addEventListener('click', () => this.cancelDelete());
+                    document.getElementById('cancelDeleteBtn').addEventListener('click', () => this.cancelDelete());
+                    document.getElementById('confirmDeleteBtn').addEventListener('click', () => this.confirmDelete());
+                    document.getElementById('spellCheckDialog').addEventListener('click', () => this.closeSpellCheck());
+                    this.elements.spellInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') this.checkSpelling(); });
+                },
+                syncTodaySwipeCount() {
+                    const swipeData = wx.getStorageSync('todaySwipeData') || {}; const today = new Date().toLocaleDateString();
+                    if (swipeData.date === today) { this.data.todaySwipeCount = swipeData.count; } else { this.data.todaySwipeCount = 0; }
+                    this.elements.todaySwipeCount.textContent = this.data.todaySwipeCount;
+                },
+                updateStatistics() {
+                    const cards = wx.getStorageSync('myCards') || []; this.data.cardCount = cards.length;
+                    this.elements.cardCount.textContent = `${cards.length} 条`; this.elements.lastUpdateTime.textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+                },
+                getRandomContent(isUserAction = false) {   
+  if (isUserAction) {
+        // 1. 更新总次数
+        let totalCount = (wx.getStorageSync('swipeCount') || 0) + 1;
+        wx.setStorageSync('swipeCount', totalCount);
+        this.data.swipeCount = totalCount;
+        this.elements.swipeCount.textContent = totalCount;
+
+        // 2. 更新今日次数
+        const today = new Date().toLocaleDateString();
+        let todayData = wx.getStorageSync('todaySwipeData') || {};
+        if (todayData.date === today) {
+            todayData.count += 1;
+        } else {
+            todayData = { date: today, count: 1 };
+        }
+        wx.setStorageSync('todaySwipeData', todayData);
+        this.data.todaySwipeCount = todayData.count;
+        this.elements.todaySwipeCount.textContent = todayData.count;
+    }
+					
+					
+					
+					
+                    const cards = wx.getStorageSync('myCards') || [];
+                    if (cards.length > 0) {
+                        const idx = Math.floor(Math.random() * cards.length); 
+                        this.data.displayContent = cards[idx]; 
+                        this.data.currentIndex = idx;
+                        
+                        // 更新单词计数
+                        const wordCounts = wx.getStorageSync('wordCounts') || {};
+                        const currentWord = cards[idx];
+                        wordCounts[currentWord] = (wordCounts[currentWord] || 0) + 1;
+                        wx.setStorageSync('wordCounts', wordCounts);
+                        
+                        // 显示单词和计数
+                        const count = wordCounts[currentWord];
+                        if (count > 1) {
+                            this.elements.displayContent.innerHTML = `
+                                <div class="card-content-container">
+                                    ${currentWord}
+                                    <div class="word-count">${count}</div>
+                                </div>
+                            `;
+                        } else {
+                            this.elements.displayContent.textContent = currentWord;
+                        }
+                    } else { 
+                        this.elements.displayContent.textContent = '暂无内容，请添加'; 
+                        this.data.currentIndex = -1; 
+                    }
+                    this.updateStatistics();
+                },
+                drawOne() { this.getRandomContent(true); },
+                deleteContent() {
+                    if (!this.data.displayContent || this.data.displayContent === '暂无内容，请添加') { wx.showToast({ title: '没有内容可删除', icon: 'error' }); return; }
+                    this.elements.confirmDialog.style.display = 'flex';
+                },
+                confirmDelete() {
+                    const cards = wx.getStorageSync('myCards') || []; const idx = this.data.currentIndex;
+                    if (idx >= 0 && idx < cards.length) { cards.splice(idx, 1); wx.setStorageSync('myCards', cards); wx.showToast({ title: '删除成功', icon: 'success' }); this.getRandomContent(); }
+                    this.cancelDelete();
+                },
+                cancelDelete() { this.elements.confirmDialog.style.display = 'none'; },
+                markword() {
+                    const word = this.data.displayContent;
+                    if (!word || word === '暂无内容，请添加') { wx.showToast({ title: '没有内容可标记', icon: 'error' }); return; }
+                    let markedWords = wx.getStorageSync('markedWords') || [];
+                    if (markedWords.includes(word)) { wx.showToast({ title: '内容已标记', icon: 'info' }); return; }
+                    markedWords.push(word); wx.setStorageSync('markedWords', markedWords); wx.showToast({ title: '✓ 已标记', icon: 'success' });
+                },
+                travelToEudic() {
+                    const word = this.data.displayContent;
+                    if (!word || word === '暂无内容，请添加') { wx.showToast({ title: '没有内容可穿越', icon: 'error' }); return; }
+                    wx.setClipboardData({ data: word }); const encodedWord = encodeURIComponent(word.trim()); const url = `eudic://dict/${encodedWord}`; window.location.href = url;
+                },
+               openSpellCheck() {
+                    if (!this.data.displayContent || this.data.displayContent === '暂无内容，请添加') {
+                        wx.showToast({ title: '没有内容可拼写', icon: 'error' });
+                        return;
+                    }
+                    this.elements.spellInput.value = '';
+                    this.elements.spellMessageContainer.innerHTML = '';
+                    this.elements.spellInput.classList.remove('error');
+                    this.elements.spellCheckDialog.style.display = 'flex';
+                    // 尝试立即聚焦，并设置一个延迟的后备聚焦以确保成功
+                    this.elements.spellInput.focus();
+                    setTimeout(() => { this.elements.spellInput.focus(); }, 150);
+                },
+                closeSpellCheck() { this.elements.spellCheckDialog.style.display = 'none'; this.data.isChecking = false; },
+                checkSpelling() {
+                    if (this.data.isChecking) return; this.data.isChecking = true; const input = this.elements.spellInput.value.trim().toLowerCase(); const correct = (this.data.displayContent || '').trim().toLowerCase();
+                    const msgContainer = this.elements.spellMessageContainer;
+                    if (!input) { msgContainer.innerHTML = `<div class="spell-error-msg">请输入单词</div>`; this.elements.spellInput.classList.add('error'); this.data.isChecking = false; return; }
+                    if (input === correct) {
+                        msgContainer.innerHTML = `<div class="spell-correct-msg">✓ 拼写正确！</div>`; this.elements.spellInput.classList.remove('error');
+                        setTimeout(() => { this.closeSpellCheck(); }, 1000);
+                    } else {
+                        msgContainer.innerHTML = `<div class="spell-error-msg">拼写错误，请重试</div>`;
+                        this.elements.spellInput.classList.add('error');
+                        this.elements.spellInput.value = ''; // 清空输入框
+                        this.elements.spellInput.focus();
+                        this.data.isChecking = false;
+                    }
+                }
+            },
+            // =================================== PAGE 2: 管理 ===================================
+            page2: {
+                elements: { inputContent: document.getElementById('inputContent'), saveStatus: document.getElementById('saveStatus'), },
+                onLoad() { this.addEventListeners(); },
+                onShow() { this.elements.inputContent.value = ''; this.elements.saveStatus.textContent = ''; },
+                addEventListeners() {
+                    document.getElementById('saveCardBtn').addEventListener('click', () => this.saveCard());
+                    document.getElementById('copyAllBtn').addEventListener('click', () => this.copyAllContents());
+                    document.getElementById('clearAllBtn').addEventListener('click', () => this.onClearAll());
+                },
+                saveCard() {
+                    const content = this.elements.inputContent.value;
+                    const newCards = content.split('。').map(s => s.trim()).filter(s => s !== '');
+
+                    if (newCards.length === 0) {
+                        wx.showToast({ title: '内容不能为空', icon: 'none' });
+                        return;
+                    }
+
+                    const existingCards = wx.getStorageSync('myCards') || [];
+                    const updatedCards = existingCards.concat(newCards);
+                    wx.setStorageSync('myCards', updatedCards);
+
+                    this.elements.saveStatus.textContent = `成功保存 ${newCards.length} 条!`;
+                    this.elements.inputContent.value = '';
+                    setTimeout(() => { this.elements.saveStatus.textContent = ''; }, 2000);
+                },
+                copyAllContents() {
+                    const cards = wx.getStorageSync('myCards') || [];
+                    if (cards.length === 0) { wx.showToast({ title: '没有内容可复制', icon: 'none' }); return; }
+                    const contents = cards.join('\n'); wx.setClipboardData({ data: contents, success: () => wx.showToast({ title: '复制成功', icon: 'success', duration: 1000 }) });
+                },
+                onClearAll() {
+                    wx.showModal({
+                        title: '警告', content: '确定要清空所有内容吗？此操作不可恢复！',
+                        success: (res) => { if (res.confirm) { wx.removeStorageSync('myCards'); this.elements.saveStatus.textContent = ''; wx.showToast({ title: '已清空', icon: 'success', duration: 1000 }); } }
+                    });
+                }
+            },
+            // =================================== PAGE 3: 已标记 ===================================
+            page3: {
+                data: { selectedWord: null, },
+                elements: {
+                    container: document.getElementById('markedWordsContainer'), noMarkedMsg: document.getElementById('noMarkedMessage'),
+                    actionContainer: document.getElementById('page3ActionContainer'), deleteBtn: document.getElementById('deleteMarkedBtn'), travelBtn: document.getElementById('travelMarkedBtn'),
+                },
+                onLoad() { this.addEventListeners(); },
+                onShow() { this.loadMarkedWords(); },
+                addEventListeners() {
+                    this.elements.deleteBtn.addEventListener('click', () => this.deleteSelectedWord());
+                    this.elements.travelBtn.addEventListener('click', () => this.travelSelectedWord());
+                },
+                loadMarkedWords() {
+                    const words = wx.getStorageSync('markedWords') || [];
+                    this.elements.container.innerHTML = ''; this.data.selectedWord = null; this.elements.actionContainer.style.display = 'none';
+                    if (words.length === 0) { this.elements.noMarkedMsg.style.display = 'block'; }
+                    else {
+                        this.elements.noMarkedMsg.style.display = 'none';
+                        words.forEach(word => {
+                            const wordEl = document.createElement('div'); wordEl.className = 'marked-word'; wordEl.textContent = word; wordEl.dataset.word = word;
+                            wordEl.addEventListener('click', (e) => this.selectWord(e)); this.elements.container.appendChild(wordEl);
+                        });
+                    }
+                },
+                selectWord(e) {
+                    const word = e.currentTarget.dataset.word;
+                    if (this.data.selectedWord === word) {
+                        this.data.selectedWord = null; e.currentTarget.classList.remove('selected'); this.elements.actionContainer.style.display = 'none';
+                    } else {
+                        if (this.data.selectedWord) { const prevSelected = this.elements.container.querySelector('.selected'); if (prevSelected) prevSelected.classList.remove('selected'); }
+                        this.data.selectedWord = word; e.currentTarget.classList.add('selected'); this.elements.actionContainer.style.display = 'flex';
+                    }
+                },
+                deleteSelectedWord() {
+                    if (!this.data.selectedWord) return;
+                    let markedWords = wx.getStorageSync('markedWords') || []; markedWords = markedWords.filter(w => w !== this.data.selectedWord);
+                    wx.setStorageSync('markedWords', markedWords); wx.showToast({ title: '删除成功', icon: 'success', duration: 400 }); this.loadMarkedWords();
+                },
+                travelSelectedWord() {
+                    const word = this.data.selectedWord;
+                    if (!word) { wx.showToast({ title: '没有选中内容', icon: 'error' }); return; }
+                    wx.setClipboardData({ data: word }); const encodedWord = encodeURIComponent(word.trim()); const url = `eudic://dict/${encodedWord}`; window.location.href = url;
+                }
+            },
+        };
+
+        // --- Initialize App ---
+        Object.values(app).forEach(pageModule => { if(typeof pageModule.onLoad === 'function') pageModule.onLoad(); });
+        navigateTo('page1');
+        
+        // Add initial data (for demonstration)
+        if (!localStorage.getItem('myCards')) {
+            const demoWords = [
+               
+            ];
+            localStorage.setItem('myCards', JSON.stringify(demoWords));
+        }
+    });
+    </script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker registered: ', registration);
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed: ', error);
+                });
+        });
+    }
+    </script>
+</body>
+</html>
