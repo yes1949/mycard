@@ -136,6 +136,7 @@
         /* --- 页面1 (抽卡) 样式 --- */
         #page1 { align-items: center; }
         .flex-grow { flex-grow: 1; }
+        
         .stats-card {
             background-color: #ffffff;
             border-radius: 2.67vw;
@@ -147,7 +148,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            cursor: pointer; /* 提示可点击 */
+            transition: all 0.3s ease; /* 添加过渡效果 */
         }
+        
+        /* 新增提示文字样式 */
+        .stats-hint {
+            font-size: 3.73vw;
+            color: #999;
+            font-weight: bold;
+            user-select: none;
+            padding: 1vw 0;
+        }
+
         .statistics {
             margin: 1.07vw 0;
             display: flex;
@@ -180,8 +193,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer; /* 提示可点击 */
-            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
         }
         .card-content { 
             font-size: 4.27vw; 
@@ -190,16 +201,10 @@
             text-align: center; 
             word-break: break-word; 
             user-select: text; 
+            /* 调整左右 padding，为角标留出空间 */
             padding: 0 5.5vw; 
-            display: inline-block; 
+            display: inline-block; /* 确保 padding 起作用 */
             box-sizing: border-box;
-            transition: opacity 0.2s ease-in-out; /* 添加过渡效果 */
-            opacity: 1; /* 默认显示 */
-        }
-        /* [CSS 新增] 隐藏内容的样式 */
-        .card-content.hidden {
-            opacity: 0;
-            user-select: none; /* 隐藏时禁止选中 */
         }
         .button-group { width: 100%; display: flex; flex-direction: column; gap: 2.13vw; padding-bottom: 0.67vw; box-sizing: border-box; }
         .button-row { display: flex; justify-content: space-between; gap: 1.6vw; width: 100%; }
@@ -223,6 +228,7 @@
         .spell-correct-msg { color: #2ecc71; font-size: 4.27vw; font-weight: bold; text-align: center; margin-top: 2.67vw; }
 
         /* --- 页面2 (管理) 样式 --- */
+        
         #page2 {
             justify-content: center; /* 垂直居中 */
             align-items: center; /* 水平居中 */
@@ -382,11 +388,14 @@
     </nav>
 
     <div id="page1" class="page-container active">
-        <div class="stats-card">
-            <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
-            <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
-            <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
-            <div class="statistics"><span class="label">⏱️ 最后更新：</span><span class="value" id="lastUpdateTime"></span></div>
+        <div class="stats-card" id="statsCard">
+            <div id="statsHint" class="stats-hint">📊 </div>
+            <div id="statsContent" style="display: none;">
+                <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
+                <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
+                <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
+                <div class="statistics"><span class="label">⏱️ 最后更新：</span><span class="value" id="lastUpdateTime"></span></div>
+            </div>
         </div>
 
         <div class="filter-section" id="pastdayFilterSection">
@@ -456,7 +465,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.6'; 
+        const APP_VERSION = 'v2.7'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -558,7 +567,6 @@
                     cardCount: 0, 
                     swipeCount: 0, 
                     todaySwipeCount: 0,
-                    isContentVisible: false, // [JS新增] 内容可见性状态，默认为不可见
                     
                     // 新增的模式变量
                     currentMode: 'A', // 'A', '0', '1', '-1'
@@ -595,8 +603,11 @@
                     spellInput: document.getElementById('spellInput'), 
                     spellMessageContainer: document.getElementById('spellMessageContainer'),
                     pastdayFilterSection: document.getElementById('pastdayFilterSection'), 
-                    progressDisplay: document.getElementById('progressDisplay'),
-                    cardDisplayArea: document.querySelector('.card-display') // [JS新增] 获取整个显示区域
+                    progressDisplay: document.getElementById('progressDisplay'), // 新增进度显示元素
+                    // 新增统计卡片相关元素
+                    statsCard: document.getElementById('statsCard'),
+                    statsContent: document.getElementById('statsContent'),
+                    statsHint: document.getElementById('statsHint')
                 },
                 filterOptions: ['A', '0', '1', '-1'], // 新的筛选按钮，增加-1
                 // 定义 todayword 筛选条件
@@ -636,25 +647,16 @@
                         }
                     });
 
-                    // [JS新增] 点击显示区域切换可见性
-                    this.elements.cardDisplayArea.addEventListener('click', () => this.toggleContentVisibility());
-                },
-                // [JS新增] 切换内容可见性
-                toggleContentVisibility() {
-                    // 如果是“暂无内容”，不要进行隐藏操作
-                    if (this.data.currentIndex === -1) return;
-
-                    this.data.isContentVisible = !this.data.isContentVisible;
-                    this.renderVisibility();
-                },
-                // [JS新增] 根据状态渲染可见性
-                renderVisibility() {
-                    const contentEl = this.elements.displayContent;
-                    if (this.data.isContentVisible) {
-                        contentEl.classList.remove('hidden');
-                    } else {
-                        contentEl.classList.add('hidden');
-                    }
+                    // 新增：统计卡片点击切换逻辑
+                    this.elements.statsCard.addEventListener('click', () => {
+                        if (this.elements.statsContent.style.display === 'none') {
+                            this.elements.statsContent.style.display = 'block';
+                            this.elements.statsHint.style.display = 'none'; // 展开时隐藏提示
+                        } else {
+                            this.elements.statsContent.style.display = 'none';
+                            this.elements.statsHint.style.display = 'block'; // 收起时显示提示
+                        }
+                    });
                 },
                 renderFilterDots() {
                     this.elements.pastdayFilterSection.innerHTML = '';
@@ -882,7 +884,6 @@
                                 wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
                                 this.updateProgressDisplay();
                                 this.saveProgress(); // 保存状态
-                                this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                                 return;
                             }
                             this.data.j = this.data.allword.length; // 记录本轮总数
@@ -909,7 +910,6 @@
                                 wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
                                 this.updateProgressDisplay();
                                 this.saveProgress(); // 保存状态
-                                this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                                 return;
                             }
                             this.data.n = this.data.todayword.length; // 记录本轮总数
@@ -933,7 +933,6 @@
                                 wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
                                 this.updateProgressDisplay();
                                 this.saveProgress();
-                                this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                                 return;
                             }
                             this.data.z = this.data.todayNewWord.length;
@@ -958,7 +957,6 @@
                         this.updateStatistics(); 
                         this.updateProgressDisplay();
                         this.saveProgress(); // 保存状态
-                        this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                         return; 
                     }
                     
@@ -992,10 +990,6 @@
                     this.updateStatistics();
                     this.updateProgressDisplay();
                     this.saveProgress(); // 保存新的进度
-
-                    // [JS新增] 新内容加载时，默认隐藏
-                    this.data.isContentVisible = false;
-                    this.renderVisibility();
                 },
                 drawOne() { this.getRandomContent(true); },
                 deleteContent() {
@@ -1394,6 +1388,7 @@
         // --- Initialize App ---
         Object.values(app).forEach(pageModule => { if(typeof pageModule.onLoad === 'function') pageModule.onLoad(); });
         navigateTo('page1');
+                
     });
     </script>
     <script>
