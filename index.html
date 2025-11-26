@@ -180,6 +180,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            cursor: pointer; /* 提示可点击 */
+            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
         }
         .card-content { 
             font-size: 4.27vw; 
@@ -188,10 +190,16 @@
             text-align: center; 
             word-break: break-word; 
             user-select: text; 
-            /* 调整左右 padding，为角标留出空间 */
             padding: 0 5.5vw; 
-            display: inline-block; /* 确保 padding 起作用 */
+            display: inline-block; 
             box-sizing: border-box;
+            transition: opacity 0.2s ease-in-out; /* 添加过渡效果 */
+            opacity: 1; /* 默认显示 */
+        }
+        /* [CSS 新增] 隐藏内容的样式 */
+        .card-content.hidden {
+            opacity: 0;
+            user-select: none; /* 隐藏时禁止选中 */
         }
         .button-group { width: 100%; display: flex; flex-direction: column; gap: 2.13vw; padding-bottom: 0.67vw; box-sizing: border-box; }
         .button-row { display: flex; justify-content: space-between; gap: 1.6vw; width: 100%; }
@@ -215,20 +223,12 @@
         .spell-correct-msg { color: #2ecc71; font-size: 4.27vw; font-weight: bold; text-align: center; margin-top: 2.67vw; }
 
         /* --- 页面2 (管理) 样式 --- */
-        
-        /* --- [CSS 新增] --- */
         #page2 {
             justify-content: center; /* 垂直居中 */
             align-items: center; /* 水平居中 */
         }
-        /* --- [CSS 新增结束] --- */
 
         .page2-bottom-fixed-section {
-            /* [MODIFIED] 移除了 position: fixed 和相关定位样式 */
-            /* position: fixed; */
-            /* bottom: 0; */
-            /* left: 50%; */
-            /* transform: translateX(-50%); */
             width: 100%;
             max-width: 80vw;
             display: flex;
@@ -236,8 +236,6 @@
             align-items: center;
             box-sizing: border-box;
             padding: 20px;
-            /* [MODIFIED] 移除了固底的 padding-bottom */
-            /* padding-bottom: calc(20px + var(--safe-area-bottom)); */
         }
         .input-box {
             width: 100%;
@@ -260,14 +258,12 @@
         .right-copy { background: linear-gradient(135deg, #4caf50, #43a047); }
         #page2 .btn:active { transform: scale(0.97); opacity: 0.85; }
         .save-status { margin-top: 20px; font-size: 4.27vw; color: #2ecc71; min-height: 20px; font-weight: bold; }
-        /* --- [CSS 新增] --- */
         .version-info {
             font-size: 3.2vw;
             color: #aaa;
             text-align: center;
             margin-top: 15px; /* 与上方内容保持距离 */
         }
-        /* --- [CSS 新增结束] --- */
 
 
         /* --- 页面3 (已标记) 样式 --- */
@@ -460,7 +456,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.5'; 
+        const APP_VERSION = 'v2.6'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -562,6 +558,7 @@
                     cardCount: 0, 
                     swipeCount: 0, 
                     todaySwipeCount: 0,
+                    isContentVisible: false, // [JS新增] 内容可见性状态，默认为不可见
                     
                     // 新增的模式变量
                     currentMode: 'A', // 'A', '0', '1', '-1'
@@ -598,7 +595,8 @@
                     spellInput: document.getElementById('spellInput'), 
                     spellMessageContainer: document.getElementById('spellMessageContainer'),
                     pastdayFilterSection: document.getElementById('pastdayFilterSection'), 
-                    progressDisplay: document.getElementById('progressDisplay') // 新增进度显示元素
+                    progressDisplay: document.getElementById('progressDisplay'),
+                    cardDisplayArea: document.querySelector('.card-display') // [JS新增] 获取整个显示区域
                 },
                 filterOptions: ['A', '0', '1', '-1'], // 新的筛选按钮，增加-1
                 // 定义 todayword 筛选条件
@@ -637,6 +635,26 @@
                             this.changeMode(mode);
                         }
                     });
+
+                    // [JS新增] 点击显示区域切换可见性
+                    this.elements.cardDisplayArea.addEventListener('click', () => this.toggleContentVisibility());
+                },
+                // [JS新增] 切换内容可见性
+                toggleContentVisibility() {
+                    // 如果是“暂无内容”，不要进行隐藏操作
+                    if (this.data.currentIndex === -1) return;
+
+                    this.data.isContentVisible = !this.data.isContentVisible;
+                    this.renderVisibility();
+                },
+                // [JS新增] 根据状态渲染可见性
+                renderVisibility() {
+                    const contentEl = this.elements.displayContent;
+                    if (this.data.isContentVisible) {
+                        contentEl.classList.remove('hidden');
+                    } else {
+                        contentEl.classList.add('hidden');
+                    }
                 },
                 renderFilterDots() {
                     this.elements.pastdayFilterSection.innerHTML = '';
@@ -864,6 +882,7 @@
                                 wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
                                 this.updateProgressDisplay();
                                 this.saveProgress(); // 保存状态
+                                this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                                 return;
                             }
                             this.data.j = this.data.allword.length; // 记录本轮总数
@@ -890,6 +909,7 @@
                                 wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
                                 this.updateProgressDisplay();
                                 this.saveProgress(); // 保存状态
+                                this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                                 return;
                             }
                             this.data.n = this.data.todayword.length; // 记录本轮总数
@@ -913,6 +933,7 @@
                                 wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
                                 this.updateProgressDisplay();
                                 this.saveProgress();
+                                this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                                 return;
                             }
                             this.data.z = this.data.todayNewWord.length;
@@ -937,6 +958,7 @@
                         this.updateStatistics(); 
                         this.updateProgressDisplay();
                         this.saveProgress(); // 保存状态
+                        this.elements.displayContent.classList.remove('hidden'); // 确保提示信息显示
                         return; 
                     }
                     
@@ -970,6 +992,10 @@
                     this.updateStatistics();
                     this.updateProgressDisplay();
                     this.saveProgress(); // 保存新的进度
+
+                    // [JS新增] 新内容加载时，默认隐藏
+                    this.data.isContentVisible = false;
+                    this.renderVisibility();
                 },
                 drawOne() { this.getRandomContent(true); },
                 deleteContent() {
@@ -1368,41 +1394,6 @@
         // --- Initialize App ---
         Object.values(app).forEach(pageModule => { if(typeof pageModule.onLoad === 'function') pageModule.onLoad(); });
         navigateTo('page1');
-                
-        // 如果 localStorage 中没有 myCards，则添加一些 demo 数据
-        /*
-        if (!localStorage.getItem('myCards')) {
-            const today = new Date().toLocaleDateString('en-CA');
-            const demoWords = [
-                { word: 'Welcome to MyCards', pastday: 0, createDate: today },
-                { word: '这是一个例子。这是一个多行\n内容的例子。', pastday: 0, createDate: today },
-                { word: '过去一天单词', pastday: 1, createDate: new Date(new Date().setDate(new Date().getDate() - 1)).toLocaleDateString('en-CA') }, 
-                { word: '过去两天单词', pastday: 2, createDate: new Date(new Date().setDate(new Date().getDate() - 2)).toLocaleDateString('en-CA') },
-                { word: '过去四天单词', pastday: 4, createDate: new Date(new Date().setDate(new Date().getDate() - 4)).toLocaleDateString('en-CA') },
-                { word: '过去七天单词', pastday: 7, createDate: new Date(new Date().setDate(new Date().getDate() - 7)).toLocaleDateString('en-CA') },
-                { word: '过去十五天单词', pastday: 15, createDate: new Date(new Date().setDate(new Date().getDate() - 15)).toLocaleDateString('en-CA') },
-                { word: '过去三十天单词', pastday: 30, createDate: new Date(new Date().setDate(new Date().getDate() - 30)).toLocaleDateString('en-CA') },
-                { word: '过去六十天单词', pastday: 60, createDate: new Date(new Date().setDate(new Date().getDate() - 60)).toLocaleDateString('en-CA') },
-                { word: '过去九十天单词', pastday: 90, createDate: new Date(new Date().setDate(new Date().getDate() - 90)).toLocaleDateString('en-CA') },
-                { word: '过去一百二十天单词', pastday: 120, createDate: new Date(new Date().setDate(new Date().getDate() - 120)).toLocaleDateString('en-CA') },
-                { word: 'Hello\nWorld', pastday: 0, createDate: today },
-                { word: 'Another\nLine\nExample', pastday: 15, createDate: new Date(new Date().setDate(new Date().getDate() - 15)).toLocaleDateString('en-CA') },
-            ];
-            const processedDemoWords = demoWords.map(card => {
-                if (card.word.includes('\n')) {
-                    return { ...card, word: card.word.replace(/\n/g, NEWLINE_REPLACEMENT) };
-                }
-                return card;
-            });
-            localStorage.setItem('myCards', JSON.stringify(processedDemoWords));
-            // 首次设置allword和todayword和todayNewWord
-            localStorage.setItem('allword', JSON.stringify(processedDemoWords));
-            localStorage.setItem('todayword', JSON.stringify(processedDemoWords.filter(card => 
-                app.page1.TODAY_PASTDAYS_FILTER.includes(card.pastday)
-            )));
-            localStorage.setItem('todayNewWord', JSON.stringify(processedDemoWords.filter(card => card.pastday === 0))); // 新增：初始化今日新增卡片
-        }
-        */ // 示例数据代码块结束
     });
     </script>
     <script>
