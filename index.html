@@ -73,7 +73,7 @@
         }
 
         .nav-btn.active {
-            background-color: #00bcd4;
+            background-color: #eee;
             color: white;
         }
 
@@ -122,12 +122,12 @@
             padding: 0 1vw;
         }
         .btn:active { opacity: 0.8; }
-        .delete { background-color: #e74c3c; }
-        .mark { background-color: #f39c12; }
-        .spell { background-color: #9b59b6; }
-        .travel { background-color: #3498db; }
+        .delete { background-color: #eee; }
+        .mark { background-color: #eee; }
+        .spell { background-color: #eee; }
+        .travel { background-color: #eee; }
         .draw {
-            background-color: #2ecc71;
+            background-color: #eee;
             width: 100%;
             font-size: 4vw;
             border-radius: 8vw;
@@ -142,8 +142,10 @@
             border-radius: 2.67vw;
             box-shadow: 0 0.53vw 1.6vw rgba(0, 0, 0, 0.05);
             padding: 3.73vw;
-            margin: 0 auto 20px auto; /* 调整 margin，增加底部间距 */
-            width: 95%;
+            /* [Modified] 增加底部margin到50px，使其位置上提，远离输入框 */
+            margin: 0 auto 50px auto; 
+            /* [Modified] 宽度改为100%，使其变宽 */
+            width: 100%; 
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -354,7 +356,7 @@
         }
 
         .filter-dot.selected {
-            background-color: #00bcd4; 
+            background-color: #eee; 
             color: white;
             transform: scale(1.1); 
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
@@ -423,7 +425,7 @@
                 <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
                 <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
                 <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
-                <div class="statistics"><span class="label">⏱️ 最后更新：</span><span class="value" id="lastUpdateTime"></span></div>
+              
             </div>
 
             <textarea id="inputContent" class="input-box" placeholder="请输入内容，句号可分隔多条..."></textarea>
@@ -450,7 +452,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.8'; 
+        const APP_VERSION = 'v2.9'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -581,7 +583,7 @@
                     todaySwipeCount: document.getElementById('todaySwipeCount'), 
                     swipeCount: document.getElementById('swipeCount'), 
                     cardCount: document.getElementById('cardCount'),
-                    lastUpdateTime: document.getElementById('lastUpdateTime'), 
+                  
                     displayContent: document.getElementById('displayContent'), 
                     confirmDialog: document.getElementById('confirmDialog'),
                     spellCheckDialog: document.getElementById('spellCheckDialog'), 
@@ -783,7 +785,7 @@
                     const cards = wx.getStorageSync('myCards') || []; 
                     this.data.cardCount = cards.length;
                     this.elements.cardCount.textContent = `${cards.length} 条`; 
-                    this.elements.lastUpdateTime.textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+                    
                 },
                 
                 updateProgressDisplay() {
