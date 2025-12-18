@@ -425,12 +425,11 @@
                 <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
                 <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
                 <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
-              
+               
             </div>
 
             <textarea id="inputContent" class="input-box" placeholder="请输入内容，句号可分隔多条..."></textarea>
             <div class="top-btn-row">
-                <button id="clearAllBtn" class="btn left-delete">删除</button>
                 <button id="copyAllBtn" class="btn right-copy">复制</button>
                 <button id="saveCardBtn" class="btn save-btn">保存</button>
             </div>
@@ -452,7 +451,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.9'; 
+        const APP_VERSION = 'v2.9.1'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -583,7 +582,7 @@
                     todaySwipeCount: document.getElementById('todaySwipeCount'), 
                     swipeCount: document.getElementById('swipeCount'), 
                     cardCount: document.getElementById('cardCount'),
-                  
+                   
                     displayContent: document.getElementById('displayContent'), 
                     confirmDialog: document.getElementById('confirmDialog'),
                     spellCheckDialog: document.getElementById('spellCheckDialog'), 
@@ -1122,7 +1121,7 @@
                 addEventListeners() {
                     document.getElementById('saveCardBtn').addEventListener('click', () => this.saveCard());
                     document.getElementById('copyAllBtn').addEventListener('click', () => this.copyAllContents());
-                    document.getElementById('clearAllBtn').addEventListener('click', () => this.onClearAll());
+                    // [DELETED] 移除清空按钮的事件监听
                 },
                 
                 saveCard() {
@@ -1252,55 +1251,8 @@
                     const contents = cardWords.join('。\n'); 
                     wx.setClipboardData({ data: contents, success: () => wx.showToast({ title: '复制成功', icon: 'success', duration: 1000 }) });
                 },
-                onClearAll() {
-                    wx.showModal({
-                        title: '警告', content: '确定要清空所有内容吗？此操作不可恢复！',
-                        success: (res) => { 
-                            if (res.confirm) { 
-                                wx.removeStorageSync('myCards'); 
-                                wx.removeStorageSync('lastPastdayUpdateDate'); 
-                                wx.removeStorageSync('wordCounts'); 
-                                wx.removeStorageSync('markedWords'); 
-                                
-                                wx.removeStorageSync('progressData'); 
-                                wx.removeStorageSync('allword'); 
-                                wx.removeStorageSync('todayword'); 
-                                wx.removeStorageSync('todayNewWord'); // 新增：清空今日新增卡片
-                                wx.removeStorageSync('allword1'); 
-                                wx.removeStorageSync('todayword1'); 
-                                wx.removeStorageSync('todayNewWord1'); // 新增：清空今日新增卡片副本
-                                wx.removeStorageSync('lastInitDate'); 
-
-                                // 重置 page1 的所有相关数据和状态
-                                app.page1.data.allword = [];
-                                app.page1.data.allword1 = [];
-                                app.page1.data.todayword = [];
-                                app.page1.data.todayword1 = [];
-                                app.page1.data.todayNewWord = []; // 新增
-                                app.page1.data.todayNewWord1 = []; // 新增
-
-                                app.page1.data.i = 0;
-                                app.page1.data.j = 0;
-                                app.page1.data.k = 0;
-                                app.page1.data.x = 0;
-                                app.page1.data.n = 0;
-                                app.page1.data.m = 0;
-                                app.page1.data.y = 0; // 新增
-                                app.page1.data.z = 0; // 新增
-                                app.page1.data.p = 0; // 新增
-                                app.page1.data.currentMode = 'A'; 
-                                
-                                app.page1.getRandomContent(false); 
-                                app.page1.renderFilterDots(); 
-                                app.page1.updateProgressDisplay(); 
-                                app.page1.updateStatistics(); 
-
-                                this.elements.saveStatus.textContent = ''; 
-                                wx.showToast({ title: '已清空', icon: 'success', duration: 1000 }); 
-                            } 
-                        }
-                    });
-                }
+                
+                // [DELETED] 移除 onClearAll 函数
             },
             // =================================== PAGE 3: 已标记 ===================================
             page3: {
