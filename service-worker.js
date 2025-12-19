@@ -4,7 +4,7 @@
 // 每次您部署应用的新版本（例如，修改了HTML/CSS/JS）时，都应该更改此名称。
 // 这将触发 Service Worker 的更新流程，确保用户能获取到最新版本。
 // 例如，从 'mycards-cache-v1' 改为 'mycards-cache-v2'。
-const CACHE_NAME = 'mycards-cache-v3.0';
+const CACHE_NAME = 'mycards-cache-v3.1';
 
 // 需要缓存的核心文件列表
 const urlsToCache = [
@@ -99,6 +99,7 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
 
 
 
