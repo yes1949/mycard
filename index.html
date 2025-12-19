@@ -142,9 +142,7 @@
             border-radius: 2.67vw;
             box-shadow: 0 0.53vw 1.6vw rgba(0, 0, 0, 0.05);
             padding: 3.73vw;
-            /* [Modified] 增加底部margin到50px，使其位置上提，远离输入框 */
             margin: 0 auto 50px auto; 
-            /* [Modified] 宽度改为100%，使其变宽 */
             width: 100%; 
             text-align: center;
             display: flex;
@@ -193,9 +191,8 @@
             text-align: center; 
             word-break: break-word; 
             user-select: text; 
-            /* 调整左右 padding，为角标留出空间 */
             padding: 0 5.5vw; 
-            display: inline-block; /* 确保 padding 起作用 */
+            display: inline-block; 
             box-sizing: border-box;
         }
         .button-group { width: 100%; display: flex; flex-direction: column; gap: 2.13vw; padding-bottom: 0.67vw; box-sizing: border-box; }
@@ -425,10 +422,10 @@
                 <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
                 <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
                 <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
-               
+                
             </div>
 
-            <textarea id="inputContent" class="input-box" placeholder="请输入内容，句号可分隔多条..."></textarea>
+            <textarea id="inputContent" class="input-box" placeholder="格式1: 单词 (apple)。格式2: 单词,日期 (apple,20251211)"></textarea>
             <div class="top-btn-row">
                 <button id="copyAllBtn" class="btn right-copy">复制</button>
                 <button id="saveCardBtn" class="btn save-btn">保存</button>
@@ -451,7 +448,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.9.1'; 
+        const APP_VERSION = 'v2.10.0'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -582,7 +579,7 @@
                     todaySwipeCount: document.getElementById('todaySwipeCount'), 
                     swipeCount: document.getElementById('swipeCount'), 
                     cardCount: document.getElementById('cardCount'),
-                   
+                    
                     displayContent: document.getElementById('displayContent'), 
                     confirmDialog: document.getElementById('confirmDialog'),
                     spellCheckDialog: document.getElementById('spellCheckDialog'), 
@@ -1121,7 +1118,6 @@
                 addEventListeners() {
                     document.getElementById('saveCardBtn').addEventListener('click', () => this.saveCard());
                     document.getElementById('copyAllBtn').addEventListener('click', () => this.copyAllContents());
-                    // [DELETED] 移除清空按钮的事件监听
                 },
                 
                 saveCard() {
@@ -1138,7 +1134,9 @@
                         return;
                     }
 
-                    const today = new Date().toLocaleDateString('en-CA');
+                    const todayObj = new Date();
+                    todayObj.setHours(0, 0, 0, 0); 
+                    const todayStr = new Date().toLocaleDateString('en-CA'); 
 
                     let existingCards = wx.getStorageSync('myCards') || [];
                     const existingWordSet = new Set(existingCards.map(card => card.word));
@@ -1146,15 +1144,46 @@
                     let uniqueNewCards = [];
                     let duplicateCount = 0;
 
-                    rawNewCards.forEach(newWordText => {
-                        let cleanedWordText = newWordText.trim(); 
-                        cleanedWordText = cleanedWordText.replace(/\n/g, NEWLINE_REPLACEMENT);
+                    rawNewCards.forEach(itemText => {
+                        let cleanText = itemText.trim();
+                        let wordToSave = cleanText;
+                        let pastday = 0;
+                        let createDate = todayStr;
 
-                        if (existingWordSet.has(cleanedWordText) || addedWords.has(cleanedWordText)) {
+                        // 正则：匹配 "任意内容+逗号+8位数字"
+                        // 支持英文逗号(,)和中文逗号(，)
+                        const dateMatch = cleanText.match(/^(.*)[,，]\s*(\d{8})$/);
+
+                        if (dateMatch) {
+                            const extractedWord = dateMatch[1].trim();
+                            const dateStr = dateMatch[2]; // e.g. "20251211"
+
+                            // 解析日期
+                            const y = parseInt(dateStr.substring(0, 4));
+                            const m = parseInt(dateStr.substring(4, 6)) - 1; 
+                            const d = parseInt(dateStr.substring(6, 8));
+
+                            const inputDateObj = new Date(y, m, d);
+                            
+                            // 校验日期有效性
+                            if (!isNaN(inputDateObj.getTime())) {
+                                wordToSave = extractedWord;
+                                const diffTime = todayObj - inputDateObj;
+                                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+                                pastday = diffDays > 0 ? diffDays : 0; 
+                                // 重新格式化日期以确保统一
+                                createDate = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                            }
+                        }
+
+                        // 处理换行符 (对解析出来的单词部分进行处理)
+                        wordToSave = wordToSave.replace(/\n/g, NEWLINE_REPLACEMENT);
+
+                        if (existingWordSet.has(wordToSave) || addedWords.has(wordToSave)) {
                             duplicateCount++;
                         } else {
-                            uniqueNewCards.push({ word: cleanedWordText, pastday: 0, createDate: today });
-                            addedWords.add(cleanedWordText);
+                            uniqueNewCards.push({ word: wordToSave, pastday: pastday, createDate: createDate });
+                            addedWords.add(wordToSave);
                         }
                     });
 
@@ -1251,8 +1280,6 @@
                     const contents = cardWords.join('。\n'); 
                     wx.setClipboardData({ data: contents, success: () => wx.showToast({ title: '复制成功', icon: 'success', duration: 1000 }) });
                 },
-                
-                // [DELETED] 移除 onClearAll 函数
             },
             // =================================== PAGE 3: 已标记 ===================================
             page3: {
