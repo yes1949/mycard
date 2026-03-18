@@ -448,7 +448,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v2.10.0'; 
+        const APP_VERSION = 'v3.0'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -1277,7 +1277,7 @@
                     });
 
                     if (cardWords.length === 0) { wx.showToast({ title: '没有内容可复制', icon: 'none' }); return; }
-                    const contents = cardWords.join('。\n'); 
+                    const contents = cardWords.join('\n'); 
                     wx.setClipboardData({ data: contents, success: () => wx.showToast({ title: '复制成功', icon: 'success', duration: 1000 }) });
                 },
             },
