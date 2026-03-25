@@ -448,7 +448,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v3.0'; 
+        const APP_VERSION = 'v3.1'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -1142,87 +1142,112 @@
                     const existingWordSet = new Set(existingCards.map(card => card.word));
                     const addedWords = new Set();
                     let uniqueNewCards = [];
+                    let updatedCardsList = []; // 用于记录被更新的已有卡片
                     let duplicateCount = 0;
+                    let updateCount = 0; // 用于记录更新的数量
 
                     rawNewCards.forEach(itemText => {
                         let cleanText = itemText.trim();
-                        let wordToSave = cleanText;
+                        let forceUpdate = false;
+                        let tempWord = cleanText;
                         let pastday = 0;
                         let createDate = todayStr;
 
-                        // 正则：匹配 "任意内容+逗号+8位数字"
-                        // 支持英文逗号(,)和中文逗号(，)
+                        // 处理并判断日期格式
                         const dateMatch = cleanText.match(/^(.*)[,，]\s*(\d{8})$/);
-
                         if (dateMatch) {
-                            const extractedWord = dateMatch[1].trim();
-                            const dateStr = dateMatch[2]; // e.g. "20251211"
-
-                            // 解析日期
+                            tempWord = dateMatch[1].trim();
+                            const dateStr = dateMatch[2]; 
                             const y = parseInt(dateStr.substring(0, 4));
                             const m = parseInt(dateStr.substring(4, 6)) - 1; 
                             const d = parseInt(dateStr.substring(6, 8));
-
                             const inputDateObj = new Date(y, m, d);
                             
-                            // 校验日期有效性
                             if (!isNaN(inputDateObj.getTime())) {
-                                wordToSave = extractedWord;
                                 const diffTime = todayObj - inputDateObj;
                                 const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
                                 pastday = diffDays > 0 ? diffDays : 0; 
-                                // 重新格式化日期以确保统一
                                 createDate = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                             }
                         }
 
-                        // 处理换行符 (对解析出来的单词部分进行处理)
-                        wordToSave = wordToSave.replace(/\n/g, NEWLINE_REPLACEMENT);
+                        // 检测是否带有触发更新计划的感叹号 "！"
+                        if (tempWord.endsWith('！')) {
+                            forceUpdate = true;
+                            tempWord = tempWord.slice(0, -1).trim(); // 移除感叹号，保留纯单词
+                            // 如果用户带有！，则强制设置为今天新增的复习计划
+                            pastday = 0;
+                            createDate = todayStr;
+                        }
+
+                        let wordToSave = tempWord.replace(/\n/g, NEWLINE_REPLACEMENT);
 
                         if (existingWordSet.has(wordToSave) || addedWords.has(wordToSave)) {
-                            duplicateCount++;
+                            // 如果单词存在并且带有触发更新符号，执行更新逻辑
+                            if (forceUpdate) {
+                                let targetCard = existingCards.find(card => card.word === wordToSave);
+                                if (targetCard) {
+                                    targetCard.pastday = pastday;
+                                    targetCard.createDate = createDate;
+                                    updateCount++;
+                                    updatedCardsList.push(targetCard);
+                                } else {
+                                    // 极端情况：同一批次中刚才添加了，现在又出现了带有！的同名单词
+                                    let targetNewCard = uniqueNewCards.find(card => card.word === wordToSave);
+                                    if (targetNewCard) {
+                                        targetNewCard.pastday = pastday;
+                                        targetNewCard.createDate = createDate;
+                                    }
+                                }
+                            } else {
+                                duplicateCount++;
+                            }
                         } else {
                             uniqueNewCards.push({ word: wordToSave, pastday: pastday, createDate: createDate });
                             addedWords.add(wordToSave);
                         }
                     });
 
-                    if (uniqueNewCards.length > 0) {
-                        const updatedCards = existingCards.concat(uniqueNewCards);
+                    // 当有新卡片新增 或者 旧卡片被更新时，保存并重构复习池
+                    if (uniqueNewCards.length > 0 || updatedCardsList.length > 0) {
+                        let updatedCards = existingCards;
+                        if (uniqueNewCards.length > 0) {
+                            updatedCards = existingCards.concat(uniqueNewCards);
+                        }
                         wx.setStorageSync('myCards', updatedCards);
 
-                        // 更新 allword, todayword, todayNewWord
+                        // 更新全局卡片数据：allword, todayword, todayNewWord
                         app.page1.data.allword = [...updatedCards];
                         app.page1.data.todayword = updatedCards.filter(card => 
                             app.page1.TODAY_PASTDAYS_FILTER.includes(card.pastday)
                         );
-                        app.page1.data.todayNewWord = updatedCards.filter(card => card.pastday === 0); // 新增：更新今日新增卡片
+                        app.page1.data.todayNewWord = updatedCards.filter(card => card.pastday === 0);
 
                         wx.setStorageSync('allword', app.page1.data.allword);
                         wx.setStorageSync('todayword', app.page1.data.todayword);
-                        wx.setStorageSync('todayNewWord', app.page1.data.todayNewWord); // 保存今日新增卡片
+                        wx.setStorageSync('todayNewWord', app.page1.data.todayNewWord);
 
-                        // 将新卡片添加到副本中
-                        uniqueNewCards.forEach(newCard => {
-                            if (!app.page1.data.allword1.some(card => card.word === newCard.word)) {
-                                app.page1.data.allword1.push(newCard);
+                        // 将 新卡片 和 刚刚更新状态的卡片 重新分配注入到当前进行的抽卡轮次副本中
+                        const cardsToProcess = uniqueNewCards.concat(updatedCardsList);
+                        cardsToProcess.forEach(card => {
+                            if (!app.page1.data.allword1.some(c => c.word === card.word)) {
+                                app.page1.data.allword1.push(card);
                             }
-                            if (app.page1.TODAY_PASTDAYS_FILTER.includes(newCard.pastday) && 
-                                !app.page1.data.todayword1.some(card => card.word === newCard.word)) {
-                                app.page1.data.todayword1.push(newCard);
+                            if (app.page1.TODAY_PASTDAYS_FILTER.includes(card.pastday) && 
+                                !app.page1.data.todayword1.some(c => c.word === card.word)) {
+                                app.page1.data.todayword1.push(card);
                             }
-                            // 新增：将新卡片添加到 todayNewWord1
-                            if (newCard.pastday === 0 && !app.page1.data.todayNewWord1.some(card => card.word === newCard.word)) {
-                                app.page1.data.todayNewWord1.push(newCard);
+                            if (card.pastday === 0 && !app.page1.data.todayNewWord1.some(c => c.word === card.word)) {
+                                app.page1.data.todayNewWord1.push(card);
                             }
                         });
 
                         // 更新 J, N, Z 的值为新的总数
                         app.page1.data.j = app.page1.data.allword.length;
                         app.page1.data.n = app.page1.data.todayword.length;
-                        app.page1.data.z = app.page1.data.todayNewWord.length; // 新增：更新 Z
+                        app.page1.data.z = app.page1.data.todayNewWord.length;
 
-                        // 更新已抽取数量，以确保显示正确
+                        // 更新已抽取数量，以确保显示进度正确
                         if (app.page1.data.currentMode === '0') {
                             app.page1.data.i = app.page1.data.j - app.page1.data.allword1.length;
                         } else if (app.page1.data.currentMode === '1') {
@@ -1233,10 +1258,16 @@
                         
                         app.page1.saveProgress(); 
 
-                        this.elements.saveStatus.textContent = `成功保存 ${uniqueNewCards.length} 条!`;
+                        // 构建友好的提示文本
+                        let statusText = [];
+                        if (uniqueNewCards.length > 0) statusText.push(`新增 ${uniqueNewCards.length} 条`);
+                        if (updateCount > 0) statusText.push(`更新复习 ${updateCount} 条`);
+
+                        this.elements.saveStatus.textContent = statusText.join('，') + '!';
+                        
                         if (duplicateCount > 0) {
                             wx.showToast({
-                                title: `部分内容重复，跳过 ${duplicateCount} 条`,
+                                title: statusText.join('，') + `，跳过 ${duplicateCount} 条重复`,
                                 icon: 'info',
                                 duration: 3000
                             });
