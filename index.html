@@ -142,7 +142,7 @@
             border-radius: 2.67vw;
             box-shadow: 0 0.53vw 1.6vw rgba(0, 0, 0, 0.05);
             padding: 3.73vw;
-            margin: 0 auto 50px auto; 
+            margin: 0 auto; 
             width: 100%; 
             text-align: center;
             display: flex;
@@ -217,21 +217,66 @@
         .spell-correct-msg { color: #2ecc71; font-size: 4.27vw; font-weight: bold; text-align: center; margin-top: 2.67vw; }
 
         /* --- 页面2 (管理) 样式 --- */
-        
         #page2 {
-            justify-content: center; /* 垂直居中 */
-            align-items: center; /* 水平居中 */
+            justify-content: flex-start; /* 改为从上往下排列 */
+            align-items: center; 
         }
 
-        .page2-bottom-fixed-section {
+        .page2-content-wrapper {
             width: 100%;
             max-width: 80vw;
             display: flex;
             flex-direction: column;
             align-items: center;
             box-sizing: border-box;
-            padding: 20px;
+            padding: 20px 0;
+            gap: 20px;
         }
+        
+        /* 顶部搜索条样式 */
+        .search-box {
+            width: 100%;
+            height: 45px;
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            padding: 0 15px;
+            font-size: 16px;
+            box-sizing: border-box;
+            box-shadow: inset 0 0.2vw 0.5vw rgba(0, 0, 0, 0.05);
+            transition: border-color 0.3s;
+        }
+        .search-box:focus { border-color: #007AFF; box-shadow: 0 0 0.8vw rgba(0, 122, 255, 0.3); outline: none; }
+        
+        .search-result-container {
+            width: 100%;
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            text-align: left;
+            font-size: 14px;
+            color: #333;
+        }
+        .search-result-word { font-size: 18px; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        .search-result-info { margin-bottom: 6px; }
+        .review-curve span { margin-right: 5px; font-weight: bold; }
+        .review-curve .done { color: #2ecc71; }
+        .review-curve .pending { color: #333; }
+        .search-delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .search-delete-btn:active { opacity: 0.8; transform: scale(0.98); }
+
         .input-box {
             width: 100%;
             height: 80px;
@@ -239,27 +284,23 @@
             border-radius: 5px;
             padding: 10px 14px;
             font-size: 15px;
-            margin-bottom: 20px;
             box-shadow: inset 0 0.27vw 0.8vw rgba(0, 0, 0, 0.06);
             color: #333333;
             transition: border-color 0.3s ease;
             box-sizing: border-box;
         }
         .input-box:focus { border-color: #007AFF; box-shadow: 0 0 0.8vw #007AFF; outline: none; }
-        .top-btn-row { display: flex; justify-content: center; align-items: center; width: 100%; margin: 0 auto; gap: 1.6vw; }
-        #page2 .btn { font-size: 3.73vw; }
-        .left-delete { background: linear-gradient(135deg, #f44336, #e53935); }
+        .top-btn-row { display: flex; justify-content: center; align-items: center; width: 100%; gap: 1.6vw; }
+        #page2 .btn { font-size: 3.73vw; height: 11vw; line-height: 11vw;}
         .save-btn { background: linear-gradient(135deg, #409ef0, #136cf1); box-shadow: 0 0.8vw 1.6vw rgba(0, 130, 255, 0.4); }
         .right-copy { background: linear-gradient(135deg, #4caf50, #43a047); }
         #page2 .btn:active { transform: scale(0.97); opacity: 0.85; }
-        .save-status { margin-top: 20px; font-size: 4.27vw; color: #2ecc71; min-height: 20px; font-weight: bold; }
+        .save-status { font-size: 4.27vw; color: #2ecc71; min-height: 20px; font-weight: bold; margin-bottom: -5px;}
         .version-info {
             font-size: 3.2vw;
             color: #aaa;
             text-align: center;
-            margin-top: 15px; /* 与上方内容保持距离 */
         }
-
 
         /* --- 页面3 (已标记) 样式 --- */
         #page3 { justify-content: flex-end; align-items: center; }
@@ -269,7 +310,7 @@
             gap: 2.67vw;
             justify-content: center;
             width: 100%;
-            padding-bottom: calc(15vw + var(--safe-area-bottom)); /* 为底部按钮留出空间 */
+            padding-bottom: calc(15vw + var(--safe-area-bottom)); 
         }
         .marked-word { display: inline-flex; justify-content: center; align-items: center; padding: 1.87vw 3.2vw; font-size: 4.27vw; border-radius: 5.33vw; background-color: #00bcd4; color: white; user-select: text; cursor: pointer; white-space: nowrap; box-sizing: border-box; transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s; }
         .marked-word.selected { background-color: #f39c12; transform: scale(1.05); box-shadow: 0 0.53vw 1.6vw rgba(0, 0, 0, 0.1); }
@@ -282,8 +323,8 @@
             width: 80%;
             max-width: 80vw;
             z-index: 999;
-            display: none; /* 默认隐藏 */
-            gap: 15px; /* 按钮间距 */
+            display: none; 
+            gap: 15px; 
             padding: 20px 0;
             padding-bottom: calc(20px + var(--safe-area-bottom));
         }
@@ -319,22 +360,22 @@
 
         /* ----------------------- 新增筛选框样式 ----------------------- */
         .filter-section {
-            width: 50%; /* 调整宽度以容纳更多按钮 */
-            margin: 0.5vw auto 0.5vw auto; /* [Modified] 减少顶部间距，适应顶部位置 */
-            padding: 0; /* 移除所有padding */
+            width: 50%; 
+            margin: 0.5vw auto 0.5vw auto; 
+            padding: 0; 
             background-color: transparent; 
             box-shadow: none; 
             display: flex;
-            flex-wrap: nowrap; /* 确保不换行 */
-            justify-content: center; /* 水平居中 */
-            gap: 2.5vw; /* 按钮间距更大一些，防止太挤 */
-            box-sizing: border-box; /* 包含padding在内的宽度计算 */
+            flex-wrap: nowrap; 
+            justify-content: center; 
+            gap: 2.5vw; 
+            box-sizing: border-box; 
         }
 
         .filter-dot {
-            width: 7vw; /* 增大一点点，使圆形更明显 */
+            width: 7vw; 
             height: 7vw;
-            line-height: 7vw; /* 垂直居中文字 */
+            line-height: 7vw; 
             border-radius: 50%;
             background-color: #eee;
             color: #555;
@@ -347,8 +388,7 @@
             transition: background-color 0.2s, color 0.2s, transform 0.2s;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
             user-select: none;
-            /* 重新计算flex-basis，以适应四个按钮和间距 */
-            flex: 0 0 calc((100% - 3 * 2.5vw) / 4); /* (100% - 3个gap) / 4个按钮 */
+            flex: 0 0 calc((100% - 3 * 2.5vw) / 4); 
             max-width: calc((100% - 3 * 2.5vw) / 4); 
         }
 
@@ -363,8 +403,8 @@
             font-size: 3.73vw;
             color: #666;
             text-align: center;
-            margin-top: 0.5vw; /* 适当减小上边距，使其更靠近圆点按钮 */
-            min-height: 20px; /* 预留空间避免跳动 */
+            margin-top: 0.5vw; 
+            min-height: 20px; 
             user-select: text;
         }
     </style>
@@ -417,13 +457,9 @@
     </div>
 
     <div id="page2" class="page-container">
-        <div class="page2-bottom-fixed-section">
-            <div class="stats-card">
-                <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
-                <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
-                <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
-                
-            </div>
+        <div class="page2-content-wrapper">
+            <input type="text" id="searchInput" class="search-box" placeholder="">
+            <div id="searchResult" class="search-result-container" style="display:none;"></div>
 
             <textarea id="inputContent" class="input-box" placeholder="格式1: 单词 (apple)。格式2: 单词,日期 (apple,20251211)"></textarea>
             <div class="top-btn-row">
@@ -431,6 +467,12 @@
                 <button id="saveCardBtn" class="btn save-btn">保存</button>
             </div>
             <span id="saveStatus" class="save-status"></span>
+
+            <div class="stats-card">
+                <div class="statistics"><span class="label">🔥 今天已刷</span><span class="value" id="todaySwipeCount">0</span><span class="label">次！</span></div>
+                <div class="statistics"><span class="label">🔁 总共刷了</span><span class="value" id="swipeCount">0</span><span class="label">次！</span></div>
+                <div class="statistics"><span class="label">📊 当前数据数量：</span><span class="value" id="cardCount">0 条</span></div>
+            </div>
             <div id="versionInfo" class="version-info"></div>
         </div>
     </div>
@@ -448,7 +490,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v3.1'; 
+        const APP_VERSION = 'v3.2'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -555,25 +597,11 @@
                     currentMode: 'A', // 'A', '0', '1', '-1'
                     
                     // 模式0 (allword) 进度
-                    i: 0, // 当前抽卡片次
-                    j: 0, // allword1的元素数量 (初始allword的数量)
-                    k: 0, // 轮次
-                    allword: [], // 所有卡片
-                    allword1: [], // allword的副本，用于抽卡时删除
-                    
+                    i: 0, j: 0, k: 0, allword: [], allword1: [], 
                     // 模式1 (todayword) 进度
-                    x: 0, // 当前抽卡片次
-                    n: 0, // todayword1的元素数量 (初始todayword的数量)
-                    m: 0, // 轮次
-                    todayword: [], // pastday符合条件的卡片
-                    todayword1: [], // todayword的副本，用于抽卡时删除
-
+                    x: 0, n: 0, m: 0, todayword: [], todayword1: [], 
                     // 模式-1 (todayNewWord) 进度
-                    y: 0, // 当前抽卡片次
-                    z: 0, // todayNewWord1的元素数量 (初始todayNewWord的数量)
-                    p: 0, // 轮次
-                    todayNewWord: [], // todayNewWord卡片
-                    todayNewWord1: [], // todayNewWord的副本，用于抽卡时删除
+                    y: 0, z: 0, p: 0, todayNewWord: [], todayNewWord1: [], 
                 },
                 elements: {
                     todaySwipeCount: document.getElementById('todaySwipeCount'), 
@@ -586,15 +614,14 @@
                     spellInput: document.getElementById('spellInput'), 
                     spellMessageContainer: document.getElementById('spellMessageContainer'),
                     pastdayFilterSection: document.getElementById('pastdayFilterSection'), 
-                    progressDisplay: document.getElementById('progressDisplay') // 新增进度显示元素
+                    progressDisplay: document.getElementById('progressDisplay') 
                 },
-                filterOptions: ['A', '0', '1', '-1'], // 新的筛选按钮，增加-1
-                // 定义 todayword 筛选条件
+                filterOptions: ['A', '0', '1', '-1'], 
                 TODAY_PASTDAYS_FILTER: [0, 1, 4, 7, 15, 30, 60, 90, 120],
 
                 onLoad() { 
                     this.addEventListeners(); 
-                    this.handleDailyDataInitialization(); // 每日数据初始化
+                    this.handleDailyDataInitialization(); 
                     this.renderFilterDots(); 
                     this.onShow(); 
                 },
@@ -603,9 +630,9 @@
                     this.data.swipeCount = wx.getStorageSync('swipeCount') || 0; 
                     this.elements.swipeCount.textContent = this.data.swipeCount; 
                     this.syncTodaySwipeCount();
-                    this.loadProgress(); // 加载保存的进度
-                    this.getRandomContent(false); // 刷新显示当前模式下的卡片
-                    this.updateProgressDisplay(); // 更新进度显示
+                    this.loadProgress(); 
+                    this.getRandomContent(false); 
+                    this.updateProgressDisplay(); 
                 },
                 addEventListeners() {
                     document.getElementById('drawOneBtn').addEventListener('click', () => this.drawOne());
@@ -631,27 +658,21 @@
                     this.filterOptions.forEach(value => {
                         const dot = document.createElement('div');
                         dot.classList.add('filter-dot');
-                        if (this.data.currentMode === value) {
-                            dot.classList.add('selected');
-                        }
+                        if (this.data.currentMode === value) dot.classList.add('selected');
                         dot.textContent = value; 
                         dot.dataset.value = value;
                         this.elements.pastdayFilterSection.appendChild(dot);
                     });
                 },
                 changeMode(newMode) {
-                    if (this.data.currentMode === newMode) return; // 如果是当前模式，不做任何操作
-
-                    // 在切换模式前保存当前模式的进度
+                    if (this.data.currentMode === newMode) return;
                     this.saveProgress();
-
                     this.data.currentMode = newMode;
-                    this.renderFilterDots(); // 更新按钮选中状态
-                    this.getRandomContent(false); // 切换模式后，显示新的内容
-                    this.updateProgressDisplay(); // 更新进度显示
+                    this.renderFilterDots(); 
+                    this.getRandomContent(false); 
+                    this.updateProgressDisplay(); 
                 },
                 
-                // 每日数据初始化（包括allword, todayword, todayNewWord和进度变量）
                 handleDailyDataInitialization() {
                     const today = new Date().toLocaleDateString('en-CA');
                     const lastInitDate = wx.getStorageSync('lastInitDate');
@@ -660,115 +681,69 @@
                     let updated = false;
 
                     if (lastInitDate !== today) {
-                        console.log('Daily initialization triggered for a new day.');
-                        // 1. 更新 pastday
                         cards = cards.map(card => {
-                            // 只有不是今天创建的卡片才增加pastday
                             if (card.createDate !== today) { 
                                 card.pastday += 1;
                                 updated = true;
                             }
                             return card;
                         });
-                        if (updated) {
-                            wx.setStorageSync('myCards', cards);
-                        }
-                        wx.setStorageSync('lastInitDate', today); // 记录本次更新日期
+                        if (updated) wx.setStorageSync('myCards', cards);
+                        wx.setStorageSync('lastInitDate', today); 
 
-                        // 2. 清空并重新构建 allword, todayword, todayNewWord (每次新的一天都重新从 myCards 构建)
                         this.data.allword = [...cards];
-                        this.data.todayword = cards.filter(card => 
-                            this.TODAY_PASTDAYS_FILTER.includes(card.pastday)
-                        );
-                        this.data.todayNewWord = cards.filter(card => card.pastday === 0); // 新增：过滤 pastday 为 0 的卡片
+                        this.data.todayword = cards.filter(card => this.TODAY_PASTDAYS_FILTER.includes(card.pastday));
+                        this.data.todayNewWord = cards.filter(card => card.pastday === 0); 
 
                         wx.setStorageSync('allword', this.data.allword);
                         wx.setStorageSync('todayword', this.data.todayword);
-                        wx.setStorageSync('todayNewWord', this.data.todayNewWord); // 保存今日新增卡片
+                        wx.setStorageSync('todayNewWord', this.data.todayNewWord); 
 
-                        // 3. 重置所有进度变量并清空副本 (新的一天重置所有进度)
-                        this.data.i = 0;
-                        this.data.j = 0;
-                        this.data.k = 0;
-                        this.data.x = 0;
-                        this.data.n = 0;
-                        this.data.m = 0;
-                        this.data.y = 0; // 新增：重置今日新增卡片进度
-                        this.data.z = 0; // 新增：重置今日新增卡片总数
-                        this.data.p = 0; // 新增：重置今日新增卡片轮次
+                        this.data.i = 0; this.data.j = 0; this.data.k = 0;
+                        this.data.x = 0; this.data.n = 0; this.data.m = 0;
+                        this.data.y = 0; this.data.z = 0; this.data.p = 0; 
 
-                        this.data.allword1 = []; // 清空副本，等待第一次抽取时重新加载
-                        this.data.todayword1 = []; // 清空副本，等待第一次抽取时重新加载
-                        this.data.todayNewWord1 = []; // 新增：清空副本，等待第一次抽取时重新加载
+                        this.data.allword1 = []; 
+                        this.data.todayword1 = []; 
+                        this.data.todayNewWord1 = []; 
 
-                        this.saveProgress(); // 保存重置后的进度
-                        
-                        // 重置当日刷卡计数
+                        this.saveProgress(); 
                         wx.setStorageSync('todaySwipeData', { date: today, count: 0 });
                     } else {
-                        // 如果是同一天，加载已有的 allword, todayword, todayNewWord
-                        // 注意：如果 myCards 在当天有变化，allword, todayword, todayNewWord 需要从 myCards 重新生成，而不是直接从 localStorage 读取
                         this.data.allword = [...cards];
-                        this.data.todayword = cards.filter(card => 
-                            this.TODAY_PASTDAYS_FILTER.includes(card.pastday)
-                        );
-                        this.data.todayNewWord = cards.filter(card => card.pastday === 0); // 新增：过滤 pastday 为 0 的卡片
+                        this.data.todayword = cards.filter(card => this.TODAY_PASTDAYS_FILTER.includes(card.pastday));
+                        this.data.todayNewWord = cards.filter(card => card.pastday === 0); 
 
-                        // 确保副本也加载，如果存在的话
                         this.data.allword1 = wx.getStorageSync('allword1') || [];
                         this.data.todayword1 = wx.getStorageSync('todayword1') || [];
-                        this.data.todayNewWord1 = wx.getStorageSync('todayNewWord1') || []; // 新增：加载今日新增卡片副本
+                        this.data.todayNewWord1 = wx.getStorageSync('todayNewWord1') || []; 
                     }
-                    console.log('allword initialized:', this.data.allword.length);
-                    console.log('todayword initialized:', this.data.todayword.length);
-                    console.log('todayNewWord initialized:', this.data.todayNewWord.length);
                 },
-
-                // 加载进度
                 loadProgress() {
                     const savedProgress = wx.getStorageSync('progressData') || {};
                     const today = new Date().toLocaleDateString('en-CA');
-                    const lastProgressDate = savedProgress.date;
-
-                    // 只有当日期匹配时才加载进度，否则由 handleDailyDataInitialization 重置
-                    if (lastProgressDate === today) {
-                        this.data.i = savedProgress.i || 0;
-                        this.data.j = savedProgress.j || 0;
-                        this.data.k = savedProgress.k || 0;
-                        this.data.x = savedProgress.x || 0;
-                        this.data.n = savedProgress.n || 0;
-                        this.data.m = savedProgress.m || 0;
-                        this.data.y = savedProgress.y || 0; // 新增
-                        this.data.z = savedProgress.z || 0; // 新增
-                        this.data.p = savedProgress.p || 0; // 新增
+                    if (savedProgress.date === today) {
+                        this.data.i = savedProgress.i || 0; this.data.j = savedProgress.j || 0; this.data.k = savedProgress.k || 0;
+                        this.data.x = savedProgress.x || 0; this.data.n = savedProgress.n || 0; this.data.m = savedProgress.m || 0;
+                        this.data.y = savedProgress.y || 0; this.data.z = savedProgress.z || 0; this.data.p = savedProgress.p || 0;
                         this.data.currentMode = savedProgress.currentMode || 'A';
                     } else {
-                        // 如果日期不匹配，handleDailyDataInitialization 已经重置了，这里确保模式是默认A
                         this.data.currentMode = 'A';
                     }
-                    this.renderFilterDots(); // 确保加载进度后，按钮状态正确
+                    this.renderFilterDots(); 
                 },
-
-                // 保存进度
                 saveProgress() {
                     const today = new Date().toLocaleDateString('en-CA');
                     const progressData = {
-                        date: today,
-                        currentMode: this.data.currentMode,
-                        i: this.data.i,
-                        j: this.data.j,
-                        k: this.data.k,
-                        x: this.data.x,
-                        n: this.data.n,
-                        m: this.data.m,
-                        y: this.data.y, // 新增
-                        z: this.data.z, // 新增
-                        p: this.data.p, // 新增
+                        date: today, currentMode: this.data.currentMode,
+                        i: this.data.i, j: this.data.j, k: this.data.k,
+                        x: this.data.x, n: this.data.n, m: this.data.m,
+                        y: this.data.y, z: this.data.z, p: this.data.p,
                     };
                     wx.setStorageSync('progressData', progressData);
                     wx.setStorageSync('allword1', this.data.allword1);
                     wx.setStorageSync('todayword1', this.data.todayword1);
-                    wx.setStorageSync('todayNewWord1', this.data.todayNewWord1); // 新增
+                    wx.setStorageSync('todayNewWord1', this.data.todayNewWord1); 
                 },
 
                 syncTodaySwipeCount() {
@@ -781,29 +756,23 @@
                     const cards = wx.getStorageSync('myCards') || []; 
                     this.data.cardCount = cards.length;
                     this.elements.cardCount.textContent = `${cards.length} 条`; 
-                    
                 },
-                
                 updateProgressDisplay() {
                     let displayString = '';
                     if (this.data.currentMode === '0') {
-                        // 当j被初始化后才显示
                         if (this.data.j > 0 || (this.data.allword.length > 0 && this.data.k === 0 && this.data.i === 0)) {
-                             // 如果是第一轮还没开始抽卡，显示allword的实际总数
                             let currentJ = this.data.j > 0 ? this.data.j : this.data.allword.length;
-                            displayString = `${currentJ - this.data.allword1.length}-${currentJ}-${this.data.k}`; // 修正i的计算
+                            displayString = `${currentJ - this.data.allword1.length}-${currentJ}-${this.data.k}`; 
                         }
                     } else if (this.data.currentMode === '1') {
-                        // 当n被初始化后才显示
                         if (this.data.n > 0 || (this.data.todayword.length > 0 && this.data.m === 0 && this.data.x === 0)) {
-                            // 如果是第一轮还没开始抽卡，显示todayword的实际总数
                             let currentN = this.data.n > 0 ? this.data.n : this.data.todayword.length;
-                            displayString = `${currentN - this.data.todayword1.length}-${currentN}-${this.data.m}`; // 修正x的计算
+                            displayString = `${currentN - this.data.todayword1.length}-${currentN}-${this.data.m}`; 
                         }
-                    } else if (this.data.currentMode === '-1') { // 新增 -1 模式的进度显示
+                    } else if (this.data.currentMode === '-1') { 
                         if (this.data.z > 0 || (this.data.todayNewWord.length > 0 && this.data.p === 0 && this.data.y === 0)) {
                             let currentZ = this.data.z > 0 ? this.data.z : this.data.todayNewWord.length;
-                            displayString = `${currentZ - this.data.todayNewWord1.length}-${currentZ}-${this.data.p}`; // 修正y的计算
+                            displayString = `${currentZ - this.data.todayNewWord1.length}-${currentZ}-${this.data.p}`; 
                         }
                     }
                     this.elements.progressDisplay.textContent = displayString;
@@ -828,79 +797,57 @@
                         this.elements.todaySwipeCount.textContent = todayData.count;
                     }
                     
-                    let currentCardsPool = []; // 当前模式下用于抽卡的卡片池
+                    let currentCardsPool = []; 
                     let selectedCard = null;
-                    let selectedCardIndexInPool = -1; // 在当前卡片池中的索引
+                    let selectedCardIndexInPool = -1; 
 
                     if (this.data.currentMode === 'A') {
-                        currentCardsPool = [...this.data.allword]; // 始终从 allword 的最新副本中抽取
-                        if (currentCardsPool.length === 0) {
-                            selectedCard = null;
-                        } else {
+                        currentCardsPool = [...this.data.allword]; 
+                        if (currentCardsPool.length > 0) {
                             selectedCardIndexInPool = Math.floor(Math.random() * currentCardsPool.length);
                             selectedCard = currentCardsPool[selectedCardIndexInPool];
                         }
                     } else if (this.data.currentMode === '0') {
                         if (this.data.allword1.length === 0) {
-                            // 开启新一轮
                             this.data.allword1 = [...this.data.allword];
-                            // 如果 allword 本身为空，allword1 也为空，直接返回
                             if (this.data.allword1.length === 0) {
-                                this.elements.displayContent.textContent = '暂无内容，请添加';
-                                this.data.currentIndex = -1;
-                                this.updateStatistics();
-                                wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
-                                this.updateProgressDisplay();
-                                this.saveProgress(); // 保存状态
+                                this._handleEmptyPool(isUserAction);
                                 return;
                             }
-                            this.data.j = this.data.allword.length; // 记录本轮总数
-                            this.data.i = 0; // 重置本轮计数
-                            this.data.k++; // 轮次加1
+                            this.data.j = this.data.allword.length; 
+                            this.data.i = 0; 
+                            this.data.k++; 
                         }
                         currentCardsPool = this.data.allword1;
                         selectedCardIndexInPool = Math.floor(Math.random() * currentCardsPool.length);
                         selectedCard = currentCardsPool[selectedCardIndexInPool];
-                        if (isUserAction && selectedCard) { // 只有用户点击时才删除并更新计数
+                        if (isUserAction && selectedCard) { 
                             this.data.allword1.splice(selectedCardIndexInPool, 1);
-                            this.data.i = this.data.j - this.data.allword1.length; // 修正i的计算
+                            this.data.i = this.data.j - this.data.allword1.length; 
                         }
-
                     } else if (this.data.currentMode === '1') {
                         if (this.data.todayword1.length === 0) {
-                            // 开启新一轮
                             this.data.todayword1 = [...this.data.todayword];
-                            // 如果 todayword 本身为空，todayword1 也为空，直接返回
                             if (this.data.todayword1.length === 0) {
-                                this.elements.displayContent.textContent = '暂无内容，请添加';
-                                this.data.currentIndex = -1;
-                                this.updateStatistics();
-                                wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
-                                this.updateProgressDisplay();
-                                this.saveProgress(); // 保存状态
+                                this._handleEmptyPool(isUserAction);
                                 return;
                             }
-                            this.data.n = this.data.todayword.length; // 记录本轮总数
-                            this.data.x = 0; // 重置本轮计数
-                            this.data.m++; // 轮次加1
+                            this.data.n = this.data.todayword.length; 
+                            this.data.x = 0; 
+                            this.data.m++; 
                         }
                         currentCardsPool = this.data.todayword1;
                         selectedCardIndexInPool = Math.floor(Math.random() * currentCardsPool.length);
                         selectedCard = currentCardsPool[selectedCardIndexInPool];
-                        if (isUserAction && selectedCard) { // 只有用户点击时才删除并更新计数
+                        if (isUserAction && selectedCard) { 
                             this.data.todayword1.splice(selectedCardIndexInPool, 1);
-                            this.data.x = this.data.n - this.data.todayword1.length; // 修正x的计算
+                            this.data.x = this.data.n - this.data.todayword1.length; 
                         }
-                    } else if (this.data.currentMode === '-1') { // 新增 -1 模式逻辑
+                    } else if (this.data.currentMode === '-1') { 
                         if (this.data.todayNewWord1.length === 0) {
                             this.data.todayNewWord1 = [...this.data.todayNewWord];
                             if (this.data.todayNewWord1.length === 0) {
-                                this.elements.displayContent.textContent = '暂无内容，请添加';
-                                this.data.currentIndex = -1;
-                                this.updateStatistics();
-                                wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
-                                this.updateProgressDisplay();
-                                this.saveProgress();
+                                this._handleEmptyPool(isUserAction);
                                 return;
                             }
                             this.data.z = this.data.todayNewWord.length;
@@ -912,25 +859,17 @@
                         selectedCard = currentCardsPool[selectedCardIndexInPool];
                         if (isUserAction && selectedCard) {
                             this.data.todayNewWord1.splice(selectedCardIndexInPool, 1);
-                            this.data.y = this.data.z - this.data.todayNewWord1.length; // 修正y的计算
+                            this.data.y = this.data.z - this.data.todayNewWord1.length; 
                         }
                     }
 
                     if (!selectedCard) { 
-                        this.elements.displayContent.textContent = '暂无内容，请添加'; 
-                        this.data.currentIndex = -1; 
-                        if (isUserAction) { 
-                            wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
-                        }
-                        this.updateStatistics(); 
-                        this.updateProgressDisplay();
-                        this.saveProgress(); // 保存状态
+                        this._handleEmptyPool(isUserAction);
                         return; 
                     }
                     
                     let displayWord = selectedCard.word.replace(new RegExp(NEWLINE_REPLACEMENT, 'g'), '\n');
                     this.data.displayContent = displayWord; 
-                    // 找到原始 myCards 中当前显示卡片的索引
                     this.data.currentIndex = (wx.getStorageSync('myCards') || []).findIndex(card => 
                         card.word === selectedCard.word && card.pastday === selectedCard.pastday && card.createDate === selectedCard.createDate
                     );
@@ -940,7 +879,6 @@
                     
                     let count = wordCounts[currentWordText] || 0; 
                     if (isUserAction) {
-                        // 只有用户点击下一张时才增加抽卡计数
                         count = (wordCounts[currentWordText] || 0) + 1;
                         wordCounts[currentWordText] = count;
                         wx.setStorageSync('wordCounts', wordCounts);
@@ -957,7 +895,15 @@
 
                     this.updateStatistics();
                     this.updateProgressDisplay();
-                    this.saveProgress(); // 保存新的进度
+                    this.saveProgress(); 
+                },
+                _handleEmptyPool(isUserAction) {
+                    this.elements.displayContent.textContent = '暂无内容，请添加';
+                    this.data.currentIndex = -1;
+                    if (isUserAction) wx.showToast({ title: '当前筛选无卡片', icon: 'info', duration: 1500 });
+                    this.updateStatistics();
+                    this.updateProgressDisplay();
+                    this.saveProgress();
                 },
                 drawOne() { this.getRandomContent(true); },
                 deleteContent() {
@@ -976,69 +922,45 @@
                         myCards.splice(indexToDelete, 1); 
                         wx.setStorageSync('myCards', myCards); 
                         
-                        // 2. 重新构建 allword, todayword, todayNewWord (确保是最新的，已剔除删除的卡片)
+                        // 2. 重新构建 allword, todayword, todayNewWord
                         this.data.allword = [...myCards];
-                        this.data.todayword = myCards.filter(card => 
-                            this.TODAY_PASTDAYS_FILTER.includes(card.pastday)
-                        );
-                        this.data.todayNewWord = myCards.filter(card => card.pastday === 0); // 新增：重新构建今日新增卡片
+                        this.data.todayword = myCards.filter(card => this.TODAY_PASTDAYS_FILTER.includes(card.pastday));
+                        this.data.todayNewWord = myCards.filter(card => card.pastday === 0); 
 
                         wx.setStorageSync('allword', this.data.allword);
                         wx.setStorageSync('todayword', this.data.todayword);
-                        wx.setStorageSync('todayNewWord', this.data.todayNewWord); // 保存今日新增卡片
+                        wx.setStorageSync('todayNewWord', this.data.todayNewWord); 
 
-                        // 3. 更新所有模式下的副本和进度值 J, N, Z
-                        // 从 allword1 中删除（如果存在）
-                        this.data.allword1 = this.data.allword1.filter(card => 
-                            !(card.word === deletedCard.word && card.pastday === deletedCard.pastday && card.createDate === deletedCard.createDate)
-                        );
-                        // 从 todayword1 中删除（如果存在）
-                        this.data.todayword1 = this.data.todayword1.filter(card => 
-                            !(card.word === deletedCard.word && card.pastday === deletedCard.pastday && card.createDate === deletedCard.createDate)
-                        );
-                        // 从 todayNewWord1 中删除（如果存在）
-                        this.data.todayNewWord1 = this.data.todayNewWord1.filter(card => 
-                            !(card.word === deletedCard.word && card.pastday === deletedCard.pastday && card.createDate === deletedCard.createDate)
-                        );
+                        // 3. 更新副本
+                        this.data.allword1 = this.data.allword1.filter(card => !(card.word === deletedCard.word && card.pastday === deletedCard.pastday && card.createDate === deletedCard.createDate));
+                        this.data.todayword1 = this.data.todayword1.filter(card => !(card.word === deletedCard.word && card.pastday === deletedCard.pastday && card.createDate === deletedCard.createDate));
+                        this.data.todayNewWord1 = this.data.todayNewWord1.filter(card => !(card.word === deletedCard.word && card.pastday === deletedCard.pastday && card.createDate === deletedCard.createDate));
                         
-                        // 更新 J, N, Z 值 (当前轮次的总量)
-                        this.data.j = this.data.allword.length; // 重新设定 J 为新的 allword 总数
-                        this.data.n = this.data.todayword.length; // 重新设定 N 为新的 todayword 总数
-                        this.data.z = this.data.todayNewWord.length; // 新增：重新设定 Z 为新的 todayNewWord 总数
+                        // 更新 J, N, Z
+                        this.data.j = this.data.allword.length; 
+                        this.data.n = this.data.todayword.length; 
+                        this.data.z = this.data.todayNewWord.length; 
 
-                        // 如果当前模式的副本因删除而清空，则重置本轮计数
                         if (this.data.currentMode === '0') {
                             this.data.i = this.data.j - this.data.allword1.length;
-                            if (this.data.allword1.length === 0 && this.data.j > 0) { // 如果删除后为空且原总数不为0，意味着该轮次已完成
-                                this.data.k++; // 轮次加1
-                                this.data.allword1 = [...this.data.allword]; // 重新加载副本开启新轮次
-                                this.data.i = 0; // 重置本轮已抽次数
-                            } else if (this.data.allword1.length === 0 && this.data.j === 0) { // 如果删除后为空且原总数也为0
-                                this.data.i = 0;
-                            }
+                            if (this.data.allword1.length === 0 && this.data.j > 0) {
+                                this.data.k++; this.data.allword1 = [...this.data.allword]; this.data.i = 0; 
+                            } else if (this.data.allword1.length === 0 && this.data.j === 0) { this.data.i = 0; }
                         }
                         if (this.data.currentMode === '1') {
                             this.data.x = this.data.n - this.data.todayword1.length;
                             if (this.data.todayword1.length === 0 && this.data.n > 0) {
-                                this.data.m++;
-                                this.data.todayword1 = [...this.data.todayword];
-                                this.data.x = 0;
-                            } else if (this.data.todayword1.length === 0 && this.data.n === 0) {
-                                this.data.x = 0;
-                            }
+                                this.data.m++; this.data.todayword1 = [...this.data.todayword]; this.data.x = 0;
+                            } else if (this.data.todayword1.length === 0 && this.data.n === 0) { this.data.x = 0; }
                         }
-                        if (this.data.currentMode === '-1') { // 新增：更新-1模式进度
+                        if (this.data.currentMode === '-1') { 
                             this.data.y = this.data.z - this.data.todayNewWord1.length;
                             if (this.data.todayNewWord1.length === 0 && this.data.z > 0) {
-                                this.data.p++;
-                                this.data.todayNewWord1 = [...this.data.todayNewWord];
-                                this.data.y = 0;
-                            } else if (this.data.todayNewWord1.length === 0 && this.data.z === 0) {
-                                this.data.y = 0;
-                            }
+                                this.data.p++; this.data.todayNewWord1 = [...this.data.todayNewWord]; this.data.y = 0;
+                            } else if (this.data.todayNewWord1.length === 0 && this.data.z === 0) { this.data.y = 0; }
                         }
 
-                        this.saveProgress(); // 保存更新后的所有进度数据和副本
+                        this.saveProgress(); 
 
                         // 4. 清除单词计数
                         let wordCounts = wx.getStorageSync('wordCounts') || {};
@@ -1048,7 +970,7 @@
                         }
                         
                         wx.showToast({ title: '删除成功', icon: 'success' }); 
-                        this.getRandomContent(false); // 刷新显示下一张卡片
+                        this.getRandomContent(false); 
                     }
                     this.cancelDelete();
                 },
@@ -1068,8 +990,7 @@
                 },
                 openSpellCheck() {
                     if (!this.data.displayContent || this.data.displayContent === '暂无内容，请添加') {
-                        wx.showToast({ title: '没有内容可拼写', icon: 'error' });
-                        return;
+                        wx.showToast({ title: '没有内容可拼写', icon: 'error' }); return;
                     }
                     this.elements.spellInput.value = '';
                     this.elements.spellMessageContainer.innerHTML = '';
@@ -1090,9 +1011,7 @@
                         setTimeout(() => { this.closeSpellCheck(); }, 1000);
                     } else {
                         msgContainer.innerHTML = `<div class="spell-error-msg">拼写错误，请重试</div>`;
-                        this.elements.spellInput.classList.add('error');
-                        this.elements.spellInput.value = '';
-                        this.elements.spellInput.focus();
+                        this.elements.spellInput.classList.add('error'); this.elements.spellInput.value = ''; this.elements.spellInput.focus();
                         this.data.isChecking = false;
                     }
                 }
@@ -1111,15 +1030,123 @@
                 onShow() { 
                     this.elements.inputContent.value = ''; 
                     this.elements.saveStatus.textContent = ''; 
-                    // [MODIFIED] 切换到 Page 2 时，刷新统计显示
                     app.page1.updateStatistics();
                     app.page1.syncTodaySwipeCount();
                 },
                 addEventListeners() {
                     document.getElementById('saveCardBtn').addEventListener('click', () => this.saveCard());
                     document.getElementById('copyAllBtn').addEventListener('click', () => this.copyAllContents());
+                    
+                    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            this.searchWord();
+                        }
+                    });
                 },
                 
+                searchWord() {
+                    const inputEl = document.getElementById('searchInput');
+                    const resultEl = document.getElementById('searchResult');
+                    const keyword = inputEl.value.trim();
+
+                    if (!keyword) {
+                        resultEl.style.display = 'none';
+                        return;
+                    }
+
+                    const searchVal = keyword.replace(/\n/g, NEWLINE_REPLACEMENT);
+                    let myCards = wx.getStorageSync('myCards') || [];
+
+                    const foundIndex = myCards.findIndex(c => c.word === searchVal || c.word.toLowerCase() === searchVal.toLowerCase());
+
+                    if (foundIndex === -1) {
+                        resultEl.innerHTML = '<div style="text-align:center; color:#999; padding:10px 0;">无匹配内容</div>';
+                        resultEl.style.display = 'block';
+                    } else {
+                        const card = myCards[foundIndex];
+                        const joinDateStr = card.createDate.replace(/-/g, ''); // 将 2026-03-22 转换为 20260322
+                        const pastday = card.pastday;
+
+                        // 生成记忆曲线的 HTML
+                        const curveDays = [1, 2, 4, 7, 15, 30, 60, 90, 120];
+                        let curveHtml = '';
+                        curveDays.forEach(day => {
+                            if (pastday >= day) {
+                                curveHtml += `<span class="done">${day}</span>`;
+                            } else {
+                                curveHtml += `<span class="pending">${day}</span>`;
+                            }
+                        });
+
+                        resultEl.innerHTML = `
+                            <div class="search-result-word">${card.word.replace(new RegExp(NEWLINE_REPLACEMENT, 'g'), '\n')}</div>
+                            <div class="search-result-info">加入时间：${joinDateStr}</div>
+                            <div class="search-result-info review-curve">复习计划：${curveHtml}</div>
+                            <button class="search-delete-btn" id="deleteSearchBtn">删除</button>
+                        `;
+                        resultEl.style.display = 'block';
+
+                        document.getElementById('deleteSearchBtn').addEventListener('click', () => {
+                            this.deleteSpecificCard(card.word);
+                            inputEl.value = '';
+                            resultEl.style.display = 'none';
+                        });
+                    }
+                },
+                
+                deleteSpecificCard(wordToDelete) {
+                    let myCards = wx.getStorageSync('myCards') || [];
+                    const initialLen = myCards.length;
+                    myCards = myCards.filter(c => c.word !== wordToDelete);
+
+                    if (myCards.length < initialLen) {
+                        wx.setStorageSync('myCards', myCards);
+
+                        // 更新 page1 中的所有全局池数据
+                        app.page1.data.allword = [...myCards];
+                        app.page1.data.todayword = myCards.filter(card => app.page1.TODAY_PASTDAYS_FILTER.includes(card.pastday));
+                        app.page1.data.todayNewWord = myCards.filter(card => card.pastday === 0);
+
+                        wx.setStorageSync('allword', app.page1.data.allword);
+                        wx.setStorageSync('todayword', app.page1.data.todayword);
+                        wx.setStorageSync('todayNewWord', app.page1.data.todayNewWord);
+
+                        // 清理副本中的该卡片
+                        app.page1.data.allword1 = app.page1.data.allword1.filter(c => c.word !== wordToDelete);
+                        app.page1.data.todayword1 = app.page1.data.todayword1.filter(c => c.word !== wordToDelete);
+                        app.page1.data.todayNewWord1 = app.page1.data.todayNewWord1.filter(c => c.word !== wordToDelete);
+
+                        // 更新总量及当前指标
+                        app.page1.data.j = app.page1.data.allword.length;
+                        app.page1.data.n = app.page1.data.todayword.length;
+                        app.page1.data.z = app.page1.data.todayNewWord.length;
+
+                        if(app.page1.data.currentMode === '0') {
+                             app.page1.data.i = app.page1.data.j - app.page1.data.allword1.length;
+                        } else if(app.page1.data.currentMode === '1') {
+                             app.page1.data.x = app.page1.data.n - app.page1.data.todayword1.length;
+                        } else if(app.page1.data.currentMode === '-1') {
+                             app.page1.data.y = app.page1.data.z - app.page1.data.todayNewWord1.length;
+                        }
+
+                        app.page1.saveProgress();
+
+                        let wordCounts = wx.getStorageSync('wordCounts') || {};
+                        if (wordCounts[wordToDelete]) {
+                            delete wordCounts[wordToDelete];
+                            wx.setStorageSync('wordCounts', wordCounts);
+                        }
+
+                        wx.showToast({ title: '删除成功', icon: 'success' });
+                        app.page1.updateStatistics();
+
+                        // 如果删除的刚好是第一页当前正在展示的卡片，刷新它
+                        if (app.page1.data.displayContent === wordToDelete.replace(new RegExp(NEWLINE_REPLACEMENT, 'g'), '\n')) {
+                            app.page1.getRandomContent(false);
+                        }
+                    }
+                },
+
                 saveCard() {
                     let content = this.elements.inputContent.value;
                     content = content.trim().replace(/\n\s*\n/g, '\n');
@@ -1142,9 +1169,9 @@
                     const existingWordSet = new Set(existingCards.map(card => card.word));
                     const addedWords = new Set();
                     let uniqueNewCards = [];
-                    let updatedCardsList = []; // 用于记录被更新的已有卡片
+                    let forceUpdatedWordsList = []; 
                     let duplicateCount = 0;
-                    let updateCount = 0; // 用于记录更新的数量
+                    let updateCount = 0; 
 
                     rawNewCards.forEach(itemText => {
                         let cleanText = itemText.trim();
@@ -1153,7 +1180,6 @@
                         let pastday = 0;
                         let createDate = todayStr;
 
-                        // 处理并判断日期格式
                         const dateMatch = cleanText.match(/^(.*)[,，]\s*(\d{8})$/);
                         if (dateMatch) {
                             tempWord = dateMatch[1].trim();
@@ -1171,52 +1197,47 @@
                             }
                         }
 
-                        // 检测是否带有触发更新计划的感叹号 "！"
-                        if (tempWord.endsWith('！')) {
+                        // 检测是否带有触发删除重添计划的感叹号 "！"或"!"
+                        if (tempWord.endsWith('！') || tempWord.endsWith('!')) {
                             forceUpdate = true;
-                            tempWord = tempWord.slice(0, -1).trim(); // 移除感叹号，保留纯单词
-                            // 如果用户带有！，则强制设置为今天新增的复习计划
+                            tempWord = tempWord.slice(0, -1).trim();
+                            // 强制设置为今天新增的复习计划
                             pastday = 0;
                             createDate = todayStr;
                         }
 
                         let wordToSave = tempWord.replace(/\n/g, NEWLINE_REPLACEMENT);
 
-                        if (existingWordSet.has(wordToSave) || addedWords.has(wordToSave)) {
-                            // 如果单词存在并且带有触发更新符号，执行更新逻辑
-                            if (forceUpdate) {
-                                let targetCard = existingCards.find(card => card.word === wordToSave);
-                                if (targetCard) {
-                                    targetCard.pastday = pastday;
-                                    targetCard.createDate = createDate;
-                                    updateCount++;
-                                    updatedCardsList.push(targetCard);
-                                } else {
-                                    // 极端情况：同一批次中刚才添加了，现在又出现了带有！的同名单词
-                                    let targetNewCard = uniqueNewCards.find(card => card.word === wordToSave);
-                                    if (targetNewCard) {
-                                        targetNewCard.pastday = pastday;
-                                        targetNewCard.createDate = createDate;
-                                    }
-                                }
-                            } else {
-                                duplicateCount++;
+                        if (forceUpdate) {
+                            // 强制删除之前池子里存在的同名卡片
+                            const initLen = existingCards.length;
+                            existingCards = existingCards.filter(card => card.word !== wordToSave);
+                            if (existingCards.length < initLen) {
+                                updateCount++; 
+                                forceUpdatedWordsList.push(wordToSave);
+                            }
+                            
+                            // 放入新增列表（避免一次性添加多个相同的单词）
+                            if (!addedWords.has(wordToSave)) {
+                                uniqueNewCards.push({ word: wordToSave, pastday: pastday, createDate: createDate });
+                                addedWords.add(wordToSave);
                             }
                         } else {
-                            uniqueNewCards.push({ word: wordToSave, pastday: pastday, createDate: createDate });
-                            addedWords.add(wordToSave);
+                            if (existingWordSet.has(wordToSave) || addedWords.has(wordToSave)) {
+                                duplicateCount++;
+                            } else {
+                                uniqueNewCards.push({ word: wordToSave, pastday: pastday, createDate: createDate });
+                                addedWords.add(wordToSave);
+                            }
                         }
                     });
 
-                    // 当有新卡片新增 或者 旧卡片被更新时，保存并重构复习池
-                    if (uniqueNewCards.length > 0 || updatedCardsList.length > 0) {
-                        let updatedCards = existingCards;
-                        if (uniqueNewCards.length > 0) {
-                            updatedCards = existingCards.concat(uniqueNewCards);
-                        }
+                    if (uniqueNewCards.length > 0 || updateCount > 0) {
+                        // 合并过滤后的老卡片和全新的卡片
+                        let updatedCards = existingCards.concat(uniqueNewCards);
                         wx.setStorageSync('myCards', updatedCards);
 
-                        // 更新全局卡片数据：allword, todayword, todayNewWord
+                        // 更新全局卡片数据
                         app.page1.data.allword = [...updatedCards];
                         app.page1.data.todayword = updatedCards.filter(card => 
                             app.page1.TODAY_PASTDAYS_FILTER.includes(card.pastday)
@@ -1227,9 +1248,17 @@
                         wx.setStorageSync('todayword', app.page1.data.todayword);
                         wx.setStorageSync('todayNewWord', app.page1.data.todayNewWord);
 
-                        // 将 新卡片 和 刚刚更新状态的卡片 重新分配注入到当前进行的抽卡轮次副本中
-                        const cardsToProcess = uniqueNewCards.concat(updatedCardsList);
-                        cardsToProcess.forEach(card => {
+                        // 强力清理旧副本的数据
+                        if (forceUpdatedWordsList.length > 0) {
+                            forceUpdatedWordsList.forEach(word => {
+                                app.page1.data.allword1 = app.page1.data.allword1.filter(c => c.word !== word);
+                                app.page1.data.todayword1 = app.page1.data.todayword1.filter(c => c.word !== word);
+                                app.page1.data.todayNewWord1 = app.page1.data.todayNewWord1.filter(c => c.word !== word);
+                            });
+                        }
+
+                        // 将新卡片注射到当轮副本
+                        uniqueNewCards.forEach(card => {
                             if (!app.page1.data.allword1.some(c => c.word === card.word)) {
                                 app.page1.data.allword1.push(card);
                             }
@@ -1242,23 +1271,17 @@
                             }
                         });
 
-                        // 更新 J, N, Z 的值为新的总数
+                        // 更新所有当前总数统计
                         app.page1.data.j = app.page1.data.allword.length;
                         app.page1.data.n = app.page1.data.todayword.length;
                         app.page1.data.z = app.page1.data.todayNewWord.length;
 
-                        // 更新已抽取数量，以确保显示进度正确
-                        if (app.page1.data.currentMode === '0') {
-                            app.page1.data.i = app.page1.data.j - app.page1.data.allword1.length;
-                        } else if (app.page1.data.currentMode === '1') {
-                            app.page1.data.x = app.page1.data.n - app.page1.data.todayword1.length;
-                        } else if (app.page1.data.currentMode === '-1') {
-                            app.page1.data.y = app.page1.data.z - app.page1.data.todayNewWord1.length;
-                        }
+                        if (app.page1.data.currentMode === '0') app.page1.data.i = app.page1.data.j - app.page1.data.allword1.length;
+                        else if (app.page1.data.currentMode === '1') app.page1.data.x = app.page1.data.n - app.page1.data.todayword1.length;
+                        else if (app.page1.data.currentMode === '-1') app.page1.data.y = app.page1.data.z - app.page1.data.todayNewWord1.length;
                         
                         app.page1.saveProgress(); 
 
-                        // 构建友好的提示文本
                         let statusText = [];
                         if (uniqueNewCards.length > 0) statusText.push(`新增 ${uniqueNewCards.length} 条`);
                         if (updateCount > 0) statusText.push(`更新复习 ${updateCount} 条`);
@@ -1266,21 +1289,13 @@
                         this.elements.saveStatus.textContent = statusText.join('，') + '!';
                         
                         if (duplicateCount > 0) {
-                            wx.showToast({
-                                title: statusText.join('，') + `，跳过 ${duplicateCount} 条重复`,
-                                icon: 'info',
-                                duration: 3000
-                            });
+                            wx.showToast({ title: statusText.join('，') + `，跳过 ${duplicateCount} 条重复`, icon: 'info', duration: 3000 });
                         } else {
                             wx.showToast({ title: '保存成功', icon: 'success' });
                         }
                         app.page1.updateStatistics(); 
                     } else if (duplicateCount > 0) {
-                        wx.showToast({
-                            title: `全部内容重复，未保存`,
-                            icon: 'error',
-                            duration: 2500
-                        });
+                        wx.showToast({ title: `全部内容重复，未保存`, icon: 'error', duration: 2500 });
                     } else {
                         wx.showToast({ title: '没有内容可保存', icon: 'none' });
                     }
@@ -1296,11 +1311,11 @@
                     if (currentMode === 'A') {
                         cardsToCopy = wx.getStorageSync('myCards') || [];
                     } else if (currentMode === '0') {
-                        cardsToCopy = app.page1.data.allword; // 复制全部卡片模式的总卡片池
+                        cardsToCopy = app.page1.data.allword; 
                     } else if (currentMode === '1') {
-                        cardsToCopy = app.page1.data.todayword; // 复制今日复习模式的总卡片池
+                        cardsToCopy = app.page1.data.todayword; 
                     } else if (currentMode === '-1') {
-                        cardsToCopy = app.page1.data.todayNewWord; // 复制今日新增模式的总卡片池
+                        cardsToCopy = app.page1.data.todayNewWord; 
                     }
 
                     const cardWords = cardsToCopy.map(card => {
