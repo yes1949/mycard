@@ -218,7 +218,7 @@
 
         /* --- 页面2 (管理) 样式 --- */
         #page2 {
-            justify-content: flex-start; /* 改为从上往下排列 */
+            justify-content: flex-start; 
             align-items: center; 
         }
 
@@ -233,19 +233,21 @@
             gap: 20px;
         }
         
-        /* 顶部搜索条样式 */
+        /* 顶部搜索条样式（修改为横线输入） */
         .search-box {
             width: 100%;
-            height: 45px;
-            border: 1px solid #cccccc;
-            border-radius: 8px;
-            padding: 0 15px;
+            height: 40px;
+            border: none;
+            border-bottom: 2px solid #cccccc;
+            border-radius: 0;
+            padding: 0 10px;
             font-size: 16px;
             box-sizing: border-box;
-            box-shadow: inset 0 0.2vw 0.5vw rgba(0, 0, 0, 0.05);
-            transition: border-color 0.3s;
+            background-color: transparent;
+            box-shadow: none;
+            transition: border-bottom-color 0.3s;
         }
-        .search-box:focus { border-color: #007AFF; box-shadow: 0 0 0.8vw rgba(0, 122, 255, 0.3); outline: none; }
+        .search-box:focus { border-bottom-color: #007AFF; box-shadow: none; outline: none; }
         
         .search-result-container {
             width: 100%;
@@ -277,9 +279,11 @@
         }
         .search-delete-btn:active { opacity: 0.8; transform: scale(0.98); }
 
+        /* 单词输入框（下移并双倍高度） */
         .input-box {
             width: 100%;
-            height: 80px;
+            height: 160px; /* 双倍高度，原为 80px */
+            margin-top: 30px; /* 往下移动，留出卡片显示的空间 */
             border: 1px solid #cccccc;
             border-radius: 5px;
             padding: 10px 14px;
@@ -290,17 +294,17 @@
             box-sizing: border-box;
         }
         .input-box:focus { border-color: #007AFF; box-shadow: 0 0 0.8vw #007AFF; outline: none; }
+        
         .top-btn-row { display: flex; justify-content: center; align-items: center; width: 100%; gap: 1.6vw; }
         #page2 .btn { font-size: 3.73vw; height: 11vw; line-height: 11vw;}
         .save-btn { background: linear-gradient(135deg, #409ef0, #136cf1); box-shadow: 0 0.8vw 1.6vw rgba(0, 130, 255, 0.4); }
         .right-copy { background: linear-gradient(135deg, #4caf50, #43a047); }
+        .export-btn { background: linear-gradient(135deg, #607d8b, #455a64); }
+        .import-btn { background: linear-gradient(135deg, #ff9800, #f57c00); }
         #page2 .btn:active { transform: scale(0.97); opacity: 0.85; }
+        
         .save-status { font-size: 4.27vw; color: #2ecc71; min-height: 20px; font-weight: bold; margin-bottom: -5px;}
-        .version-info {
-            font-size: 3.2vw;
-            color: #aaa;
-            text-align: center;
-        }
+        .version-info { font-size: 3.2vw; color: #aaa; text-align: center; }
 
         /* --- 页面3 (已标记) 样式 --- */
         #page3 { justify-content: flex-end; align-items: center; }
@@ -458,14 +462,19 @@
 
     <div id="page2" class="page-container">
         <div class="page2-content-wrapper">
-            <input type="text" id="searchInput" class="search-box" placeholder="">
+            <input type="text" id="searchInput" class="search-box" placeholder="点击此处输入查询单词">
             <div id="searchResult" class="search-result-container" style="display:none;"></div>
 
             <textarea id="inputContent" class="input-box" placeholder="格式1: 单词 (apple)。格式2: 单词,日期 (apple,20251211)"></textarea>
+            
             <div class="top-btn-row">
+                <button id="exportBtn" class="btn export-btn">导出</button>
+                <input type="file" id="importInput" accept=".txt" style="display:none">
+                <button id="importBtn" class="btn import-btn">导入</button>
                 <button id="copyAllBtn" class="btn right-copy">复制</button>
                 <button id="saveCardBtn" class="btn save-btn">保存</button>
             </div>
+            
             <span id="saveStatus" class="save-status"></span>
 
             <div class="stats-card">
@@ -490,7 +499,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const APP_VERSION = 'v3.2'; 
+        const APP_VERSION = 'v3.4'; 
 
         const wx = {
             getStorageSync: (key) => { const item = localStorage.getItem(key); return item ? JSON.parse(item) : null; },
@@ -1036,6 +1045,9 @@
                 addEventListeners() {
                     document.getElementById('saveCardBtn').addEventListener('click', () => this.saveCard());
                     document.getElementById('copyAllBtn').addEventListener('click', () => this.copyAllContents());
+                    document.getElementById('exportBtn').addEventListener('click', () => this.exportData());
+                    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importInput').click());
+                    document.getElementById('importInput').addEventListener('change', (e) => this.importData(e));
                     
                     document.getElementById('searchInput').addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
@@ -1326,6 +1338,76 @@
                     const contents = cardWords.join('\n'); 
                     wx.setClipboardData({ data: contents, success: () => wx.showToast({ title: '复制成功', icon: 'success', duration: 1000 }) });
                 },
+
+                exportData() {
+                    const myCards = wx.getStorageSync('myCards') || [];
+                    if (myCards.length === 0) {
+                        wx.showToast({ title: '没有数据可导出', icon: 'error' });
+                        return;
+                    }
+                    const dataStr = JSON.stringify(myCards, null, 2);
+                    const blob = new Blob([dataStr], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const todayStr = new Date().toLocaleDateString('en-CA').replace(/-/g, '');
+                    a.download = `mycards_backup_${todayStr}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    wx.showToast({ title: '导出成功', icon: 'success' });
+                },
+
+                importData(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const importedData = JSON.parse(event.target.result);
+                            if (!Array.isArray(importedData)) throw new Error('Data is not an array');
+                            
+                            // 验证格式合法性
+                            const isValid = importedData.every(item => item.hasOwnProperty('word') && item.hasOwnProperty('pastday') && item.hasOwnProperty('createDate'));
+                            if (!isValid) throw new Error('Data format invalid');
+
+                            // 覆盖本地数据
+                            wx.setStorageSync('myCards', importedData);
+                            
+                            // 强制同步到 page1 的所有全局卡池中
+                            app.page1.data.allword = [...importedData];
+                            app.page1.data.todayword = importedData.filter(card => app.page1.TODAY_PASTDAYS_FILTER.includes(card.pastday));
+                            app.page1.data.todayNewWord = importedData.filter(card => card.pastday === 0);
+                            
+                            wx.setStorageSync('allword', app.page1.data.allword);
+                            wx.setStorageSync('todayword', app.page1.data.todayword);
+                            wx.setStorageSync('todayNewWord', app.page1.data.todayNewWord);
+                            
+                            // 刷新当前轮次的复习副本和计数，保证用户切回时能立马看到最新数据
+                            app.page1.data.allword1 = [];
+                            app.page1.data.todayword1 = [];
+                            app.page1.data.todayNewWord1 = [];
+                            
+                            app.page1.data.i = 0; app.page1.data.j = app.page1.data.allword.length; app.page1.data.k = 0;
+                            app.page1.data.x = 0; app.page1.data.n = app.page1.data.todayword.length; app.page1.data.m = 0;
+                            app.page1.data.y = 0; app.page1.data.z = app.page1.data.todayNewWord.length; app.page1.data.p = 0;
+                            
+                            app.page1.saveProgress();
+                            app.page1.updateStatistics();
+                            this.onShow(); // 更新 Page2 中的统计显示
+
+                            wx.showToast({ title: '导入成功', icon: 'success' });
+                        } catch (err) {
+                            console.error('Import Error:', err);
+                            wx.showToast({ title: '文件格式错误或损坏', icon: 'error' });
+                        } finally {
+                            e.target.value = ''; // 重置 file input，确保可以重复选中同一文件
+                        }
+                    };
+                    reader.readAsText(file);
+                }
             },
             // =================================== PAGE 3: 已标记 ===================================
             page3: {
